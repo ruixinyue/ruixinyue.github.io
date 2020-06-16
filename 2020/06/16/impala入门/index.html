@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
-  <title>Hive Create Table - Hexo</title>
+  <title>Impala入门 - Hexo</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 
@@ -152,8 +152,8 @@
               
   <div class="mt-3 post-meta">
     <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-    <time datetime="2020-06-12 22:38">
-      June 12, 2020 pm
+    <time datetime="2020-06-16 16:52">
+      June 16, 2020 pm
     </time>
   </div>
 
@@ -163,7 +163,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.3k 字
+      1.2k 字
     </span>
   
 
@@ -204,101 +204,230 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h3 id="Create-Table"><a href="#Create-Table" class="headerlink" title="Create Table"></a>Create Table</h3><pre><code class="hljs mysql">
-CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (Note: TEMPORARY available in Hive 0.14.0 and later)
-  [(col_name data_type [column_constraint_specification] [COMMENT col_comment], ... [constraint_specification])]
-  [COMMENT table_comment]
-  [PARTITIONED BY (col_name data_type [COMMENT col_comment], ...)]
-  [CLUSTERED BY (col_name, col_name, ...) [SORTED BY (col_name [ASC|DESC], ...)] INTO num_buckets BUCKETS]
-  [SKEWED BY (col_name, col_name, ...)                  -- (Note: Available in Hive 0.10.0 and later)]
-     ON ((col_value, col_value, ...), (col_value, col_value, ...), ...)
-     [STORED AS DIRECTORIES]
-  [
-   [ROW FORMAT row_format] 
-   [STORED AS file_format]
-     | STORED BY &#39;storage.handler.class.name&#39; [WITH SERDEPROPERTIES (...)]  -- (Note: Available in Hive 0.6.0 and later)
-  ]
-  [LOCATION hdfs_path]
-  [TBLPROPERTIES (property_name&#x3D;property_value, ...)]   -- (Note: Available in Hive 0.6.0 and later)
-  [AS select_statement];   -- (Note: Available in Hive 0.5.0 and later; not supported for external tables)</code></pre>
-
+              <h2 id="1-Impala简介"><a href="#1-Impala简介" class="headerlink" title="1. Impala简介"></a>1. Impala简介</h2><h3 id="1-1-基本概念"><a href="#1-1-基本概念" class="headerlink" title="1.1 基本概念"></a>1.1 基本概念</h3><ol>
+<li>Impala提供对存储在HDFS、Hbase或Amazon Simple Storage Service（S3）数据的高性能、低延迟的交互式SQL查询功能。</li>
+<li>基于Hive，使用Hive的元数据，类似Hive的SQL，JDBC和用户操作界面。Impala和Hive的定位不同，Impala查询速度快，可以做为大数据查询的补充，Hive更适合做需要长时间运行的跑批操作。</li>
+<li>Impala由Cloudera公司推出，2017年11份从Apache Incubator毕业，是CDH平台首选的PB级大数据实时查询分析引擎。</li>
+</ol>
+<h3 id="1-2-优缺点"><a href="#1-2-优缺点" class="headerlink" title="1.2 优缺点"></a>1.2 优缺点</h3><h4 id="1-2-1-优点"><a href="#1-2-1-优点" class="headerlink" title="1.2.1 优点"></a>1.2.1 优点</h4><ol>
+<li>使用SQL查询，使用上手快。</li>
+<li>兼容Hive，可以访问hive的metastore，对hive数据直接做数据分析。</li>
+<li>基于内存运算，不需要把中间结果写入磁盘，省掉了大量的I/O开销。</li>
+<li>无需转换为Mapreduce，直接访问存储在HDFS，HBase中的数据进行作业调度，速度快。</li>
+<li>使用了支持Data locality的I/O调度机制，尽可能地将数据和计算分配在同一台机器上进行，减少了网络开销。</li>
+<li>支持各种文件格式，如TEXTFILE 、SEQUENCEFILE 、RCFile、Parquet。</li>
+</ol>
+<h4 id="1-2-2-缺点"><a href="#1-2-2-缺点" class="headerlink" title="1.2.2 缺点"></a>1.2.2 缺点</h4><ol>
+<li>对内存的依赖大，且完全依赖于hive。</li>
+<li>实践中，分区超过1万，性能严重下降。</li>
+<li>只能读取文本文件，而不能直接读取自定义二进制文件。</li>
+<li>每当新的记录/文件被添加到HDFS中的数据目录时，该表需要被刷新。</li>
+</ol>
+<h3 id="1-3-Impala架构"><a href="#1-3-Impala架构" class="headerlink" title="1.3 Impala架构"></a>1.3 Impala架构</h3><p>Impala自身包含三个模块：Impalad、Statestore和Catalog，除此之外它还依赖Hive Metastore和HDFS。</p>
+<h4 id="1-3-1-核心组件"><a href="#1-3-1-核心组件" class="headerlink" title="1.3.1 核心组件"></a>1.3.1 核心组件</h4><ol>
+<li><p>Impalad：</p>
+<ul>
+<li>接收client的请求、Query执行并返回给中心协调节点</li>
+<li>子节点上的守护进程，负责向statestore保持通信，汇报工作。</li>
+<li>具体细节：<ul>
+<li>query planner：翻译sql，生成计划</li>
+<li>query coordinator：协调器，分配任务给query executor</li>
+<li>query executor：执行查询任务</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Catalog：</p>
+<ul>
+<li><p>分发表的元数据信息到各个impalad中；</p>
+</li>
+<li><p>接收来自statestore的所有请求。</p>
+</li>
+</ul>
+</li>
+<li><p>Statestore：</p>
+<ul>
+<li><p>负责收集分布在集群中各个impalad进程的资源信息、各节点健康状况，同步节点信息；</p>
+</li>
+<li><p>负责query的协调调度。</p>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="1-3-2-执行流程"><a href="#1-3-2-执行流程" class="headerlink" title="1.3.2 执行流程"></a>1.3.2 执行流程</h4><p><img src="C:%5CUsers%5C16336%5CAppData%5CRoaming%5CTypora%5Ctypora-user-images%5Cimage-20200616172905838.png" srcset="/img/loading.gif" alt="image-20200616172905838"></p>
 <ol>
-<li><p>CREATE TABLE 创建一个指定名字的表，如果一个同名的表或者视图已经存在，则会抛出异常，加上IF NOT EXISTS时，如果表已经存在，Hive就会忽略掉后面的执行语句，而且不会有任何提示。</p>
-<ul>
-<li><p>IF NOT EXISTS只比较表名，不比较表的模式。</p>
-<blockquote>
-<p>如果用户使用了IF NOT EXISTS，当用户所指定的表的模式和已经存在的这个表的模式不同的话，Hive不会为此做出提示。如果用户的意图是使这个表具有重新指定的那个新的模式的话，那么就需要先删除这个表，也就是丢弃之前的数据，然后再重建这张表。用户可以考虑使用一个或多个ALTER TABLE语句来修改已经存在的表的结构。</p>
-</blockquote>
-</li>
-</ul>
-</li>
-<li><p>表名和列名不区分大小写，但SerDe和属性名区分大小写。</p>
-<ol>
-<li>在Hive 0.12和更早版本中，表和列名称中仅允许使用字母数字和下划线。在Hive 0.13之后，列名可以使用任何Unicode字符，但是点(.)和冒号(:)在查询时候会报错，所以在Hive 1.2.0中不允许使用它们</li>
-<li>反引号（``）中指定的任何列名均按字面意义处理。在反引号字符串中，使用双反引号（```）表示反引号字符。反引号还可以将保留关键字用于表和列标识符。</li>
-<li>如果要限制列名只能为字母数字和下划线字符，可以将将配置属性设置<code>hive.support.quoted.identifiers</code>为<code>none</code>。在此配置中，带反引号的名称被解释为正则表达式。</li>
+<li>由Client发送一个执行SQL到任意一台Impalad的Query Planner</li>
+<li>由Query Planner 把SQL发向Query Coordinator</li>
+<li>由Query Coordinator 来调度分配任务到Impalad的所有节点</li>
+<li>各个Impalad节点的Query Executor 进行执行SQL工作</li>
+<li>执行SQL结束以后，将结果返回给Query Coordinator</li>
+<li>再由Query Coordinator 将结果返回给Client</li>
 </ol>
-</li>
-<li><p>不加EXTERNAL创建的表是管理表，hive管理自己的数据，要确认一个表是管理表还是外部表，请在DESCRIBE EXTENDED table_name的输出中查找tableType 。</p>
-</li>
-<li><p>TBLPROPERTIES可以用键值对形式，给表添加额外的一些说明。</p>
-<p>常见用法：</p>
-<ul>
-<li><p>指定压缩格式：TBLPROPERTIES（“ orc.compress” =“ ZLIB”）或（“ orc.compress” =“ SNAPPY”）或（“ orc.compress” =“ NONE”</p>
-<blockquote>
-<p>Hive会自动增加两个表属性：一个是last_modified_by，其保存着最后修改这个表的用户的用户名；另一个是last_modified_time，其保存着最后一次修改的新纪元时间秒。</p>
-</blockquote>
-</li>
-<li><p>查看TBLPROPERTIES属性：show TBLPROPERTIES table_name；</p>
-</li>
-</ul>
-</li>
-<li><p>查看表的详细信息</p>
-<ul>
-<li>desc  [extended|formatted]  table_name;</li>
-<li>formatted打印的表信息比extended的更加详细，而且阅读性更强。</li>
-</ul>
-</li>
-<li><p>查看某一列的详细信息</p>
-<ul>
-<li>desc  [extended|formatted]  table_name.column_name;</li>
-</ul>
-</li>
-</ol>
-<h2 id="Managed-and-External-Tables"><a href="#Managed-and-External-Tables" class="headerlink" title="Managed and External Tables"></a>Managed and External Tables</h2><p>hive的表从本质上分两种类型：</p>
-<ul>
-<li>管理表</li>
-<li>外部表</li>
-</ul>
-<h3 id="管理表"><a href="#管理表" class="headerlink" title="管理表"></a>管理表</h3><ol>
-<li>默认创建的表，或者是Managed修饰的表是管理表，元数据，文件，统计信息等由Hive自己管理，即Hive控制着数据的生命周期，当我们删除一个管理表时候，表中的数据也会被删除。</li>
-<li>管理表的数据存储在属性<code>hive.metastore.warehouse.dir</code>指定的路径下，默认情况下存储在类似/user/hive/warehouse/databasename.db/tablename/的路径下。在创建表的时候，如果指定location的位置，就可以覆盖默认位置。</li>
-</ol>
-<h3 id="外部表"><a href="#外部表" class="headerlink" title="外部表"></a>外部表</h3><ol>
-<li>外部表描述外部文件的元数据信息，外部表的文件可以由Hive之外的工具管理，外部表可以访问存储在例如Azure存储卷（ASV）或远程HDFS位置的源中的数据。如果更改了外部表的结构或分区，则可以使用MSCK REPAIR TABLE table_name语句刷新元数据信息。</li>
-<li>删除外部表不会删除表中的数据，只会删除掉描述表的元数据信息。</li>
-</ol>
-<h3 id="区别与应用"><a href="#区别与应用" class="headerlink" title="区别与应用"></a>区别与应用</h3><ol>
-<li>管理表拥有对表中数据的管理权，而外部表没有，删除管理表，元数据信息和表中的数据都会被删除，删除外部表只删除元数据信息，表中的数据不会被删除。</li>
-<li>需要Hive需要管理表的生命周期或生成临时表时候，使用管理表，管理表不适合和其他工具共享数据。</li>
-<li>当表中的文件已经存在时候，使用外部表，即使表被删除，文件也会保留。</li>
-</ol>
-<h3 id="管理表和外部表转换"><a href="#管理表和外部表转换" class="headerlink" title="管理表和外部表转换"></a>管理表和外部表转换</h3><ol>
-<li><p>内部表转外部表</p>
-<p>alter table table_name set tblproperties(‘EXTERNAL’=’TRUE’);</p>
-</li>
-<li><p>外部表转内部表</p>
-<p>alter table table_name set tblproperties(‘EXTERNAL’=’FALSE’);</p>
-</li>
-<li><p>查看是外部表还是管理表</p>
-<pre><code class="hljs gams">hive&gt; desc formatted table_name;
-<span class="hljs-keyword">Table</span> Type:       MANAGED_TABLE    //管理表
-<span class="hljs-keyword">Table</span> Type:       EXTERNAL_TABLE   //外部表</code></pre>
-
-</li>
-</ol>
-<p><strong>注：</strong>(‘EXTERNAL’=’TRUE’)和(‘EXTERNAL’=’FALSE’)为固定写法，区分大小写</p>
-
+<h2 id="2-操作命令"><a href="#2-操作命令" class="headerlink" title="2. 操作命令"></a>2. 操作命令</h2><h3 id="2-1-外部shell命令"><a href="#2-1-外部shell命令" class="headerlink" title="2.1 外部shell命令"></a>2.1 外部shell命令</h3><table>
+<thead>
+<tr>
+<th align="left">选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">-h,  –help</td>
+<td>显示帮助信息</td>
+</tr>
+<tr>
+<td align="left">-v  or –version</td>
+<td>显示版本信息</td>
+</tr>
+<tr>
+<td align="left">-i  hostname, –impalad=hostname</td>
+<td>指定连接运行  impalad 守护进程的主机。默认端口是 21000。</td>
+</tr>
+<tr>
+<td align="left">-q query, –query=query</td>
+<td>从命令行中传递一个shell  命令。执行完这一语句后 shell 会立即退出。</td>
+</tr>
+<tr>
+<td align="left">-f query_file, –query_file= query_file</td>
+<td>传递一个文件中的 SQL  查询。文件内容必须以分号分隔</td>
+</tr>
+<tr>
+<td align="left">-o filename or –output_file filename</td>
+<td>保存所有查询结果到指定的文件。通常用于保存在命令行使用 -q 选项执行单个查询时的查询结果。</td>
+</tr>
+<tr>
+<td align="left">-c</td>
+<td>查询执行失败时继续执行</td>
+</tr>
+<tr>
+<td align="left">-d default_db or  –database=default_db</td>
+<td>指定启动后使用的数据库，与建立连接后使用use语句选择数据库作用相同，如果没有指定，那么使用default数据库</td>
+</tr>
+<tr>
+<td align="left">-r or –refresh_after_connect</td>
+<td>建立连接后刷新  Impala 元数据</td>
+</tr>
+<tr>
+<td align="left">-p, –show_profiles</td>
+<td>对 shell 中执行的每一个查询，显示其查询执行计划</td>
+</tr>
+<tr>
+<td align="left">-B（–delimited）</td>
+<td>去格式化输出</td>
+</tr>
+<tr>
+<td align="left">–output_delimiter=character</td>
+<td>指定分隔符</td>
+</tr>
+<tr>
+<td align="left">–print_header</td>
+<td>打印列名</td>
+</tr>
+</tbody></table>
+<h3 id="2-2-内部shell命令"><a href="#2-2-内部shell命令" class="headerlink" title="2.2 内部shell命令"></a>2.2 内部shell命令</h3><table>
+<thead>
+<tr>
+<th>选项</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>help</td>
+<td>显示帮助信息</td>
+</tr>
+<tr>
+<td>explain  <sql></td>
+<td>显示执行计划</td>
+</tr>
+<tr>
+<td>profile</td>
+<td>(查询完成后执行） 查询最近一次查询的底层信息</td>
+</tr>
+<tr>
+<td>shell <shell></td>
+<td>不退出impala-shell执行shell命令</td>
+</tr>
+<tr>
+<td>version</td>
+<td>显示版本信息（同于impala-shell  -v）</td>
+</tr>
+<tr>
+<td>connect</td>
+<td>连接impalad主机，默认端口21000（同于impala-shell -i）</td>
+</tr>
+<tr>
+<td>refresh <tablename></td>
+<td>增量刷新元数据库</td>
+</tr>
+<tr>
+<td>invalidate metadata</td>
+<td>全量刷新元数据库（慎用）（同于 impala-shell -r）</td>
+</tr>
+<tr>
+<td>history</td>
+<td>历史命令</td>
+</tr>
+</tbody></table>
+<h2 id="3-数据类型"><a href="#3-数据类型" class="headerlink" title="3. 数据类型"></a>3. 数据类型</h2><table>
+<thead>
+<tr>
+<th>Hive数据类型</th>
+<th>Impala数据类型</th>
+<th>长度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TINYINT</td>
+<td>TINYINT</td>
+<td>1byte有符号整数</td>
+</tr>
+<tr>
+<td>SMALINT</td>
+<td>SMALINT</td>
+<td>2byte有符号整数</td>
+</tr>
+<tr>
+<td>INT</td>
+<td>INT</td>
+<td>4byte有符号整数</td>
+</tr>
+<tr>
+<td>BIGINT</td>
+<td>BIGINT</td>
+<td>8byte有符号整数</td>
+</tr>
+<tr>
+<td>BOOLEAN</td>
+<td>BOOLEAN</td>
+<td>布尔类型，true或者false</td>
+</tr>
+<tr>
+<td>FLOAT</td>
+<td>FLOAT</td>
+<td>单精度浮点数</td>
+</tr>
+<tr>
+<td>DOUBLE</td>
+<td>DOUBLE</td>
+<td>双精度浮点数</td>
+</tr>
+<tr>
+<td>STRING</td>
+<td>STRING</td>
+<td>字符系列。可以指定字符集。可以使用单引号或者双引号。</td>
+</tr>
+<tr>
+<td>TIMESTAMP</td>
+<td>TIMESTAMP</td>
+<td>时间类型</td>
+</tr>
+<tr>
+<td>BINARY</td>
+<td>不支持</td>
+<td>字节数组</td>
+</tr>
+</tbody></table>
+<p>注意：Impala虽然支持array，map，struct复杂数据类型，但是支持并不完全，一般处理方法，将复杂类型转化为基本类型，通过hive创建表。</p>
+<h2 id="4-DDL操作"><a href="#4-DDL操作" class="headerlink" title="4. DDL操作"></a>4. DDL操作</h2><h2 id="5-DML操作"><a href="#5-DML操作" class="headerlink" title="5. DML操作"></a>5. DML操作</h2>
             </article>
             <hr>
             <div>
@@ -307,7 +436,7 @@ CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/Hive/">Hive</a>
+                      <a class="hover-with-bg" href="/categories/Impala/">Impala</a>
                     
                   </div>
                 
@@ -315,7 +444,7 @@ CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/Hive/">Hive</a>
+                      <a class="hover-with-bg" href="/tags/Impala/">Impala</a>
                     
                   </div>
                 
@@ -328,18 +457,12 @@ CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2020/06/16/impala%E5%85%A5%E9%97%A8/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Impala入门</span>
-                        <span class="visible-mobile">Previous</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2020/06/12/hello-world/">
-                        <span class="hidden-mobile">Hello World</span>
+                      <a href="/2020/06/12/Hive_CreateDropTruncate_Table/">
+                        <span class="hidden-mobile">Hive Create Table</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
@@ -478,7 +601,7 @@ CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (
     var typed = new Typed('#subtitle', {
       strings: [
         '  ',
-        "Hive Create Table&nbsp;",
+        "Impala入门&nbsp;",
       ],
       cursorChar: "_",
       typeSpeed: 70,
