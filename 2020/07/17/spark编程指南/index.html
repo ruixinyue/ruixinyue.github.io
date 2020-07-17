@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
-  <title>spark编程指南 - ruixinyue</title>
+  <title>Spark系列（二）—— Spark编程指南 - ruixinyue</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 
@@ -146,7 +146,7 @@
           <div class="container text-center white-text fadeInUp">
             <span class="h2" id="subtitle">
               
-                spark编程指南
+                Spark系列（二）—— Spark编程指南
               
             </span>
 
@@ -206,7 +206,7 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <h1 id="Spark系列（二）——Spark编程指南"><a href="#Spark系列（二）——Spark编程指南" class="headerlink" title="Spark系列（二）——Spark编程指南"></a>Spark系列（二）——Spark编程指南</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><blockquote>
+              <h1 id="Spark系列（二）——-Spark编程指南"><a href="#Spark系列（二）——-Spark编程指南" class="headerlink" title="Spark系列（二）—— Spark编程指南"></a>Spark系列（二）—— Spark编程指南</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1. 概述"></a>1. 概述</h2><blockquote>
 <p>At a high level, every Spark application consists of a <em>driver program</em> that runs the user’s <code>main</code> function and executes various <em>parallel operations</em> on a cluster. The main abstraction Spark provides is a <em>resilient distributed dataset</em> (RDD), which is a collection of elements partitioned across the nodes of the cluster that can be operated on in parallel. RDDs are created by starting with a file in the Hadoop file system (or any other Hadoop-supported file system), or an existing Scala collection in the driver program, and transforming it. Users may also ask Spark to <em>persist</em> an RDD in memory, allowing it to be reused efficiently across parallel operations. Finally, RDDs automatically recover from node failures.</p>
 <p>A second abstraction in Spark is <em>shared variables</em> that can be used in parallel operations. By default, when Spark runs a function in parallel as a set of tasks on different nodes, it ships a copy of each variable used in the function to each task. Sometimes, a variable needs to be shared across tasks, or between tasks and the driver program. Spark supports two types of shared variables: <em>broadcast variables</em>, which can be used to cache a value in memory on all nodes, and <em>accumulators</em>, which are variables that are only “added” to, such as counters and sums.</p>
 <p>This guide shows each of these features in each of Spark’s supported languages. It is easiest to follow along with if you launch Spark’s interactive shell – either <code>bin/spark-shell</code> for the Scala shell or <code>bin/pyspark</code> for the Python one.</p>
@@ -276,15 +276,21 @@ distFile: org.apache.spark.rdd.<span class="hljs-type">RDD</span>[<span class="h
 </ul>
 <p>Apart from text files, Spark’s Scala API also supports several other data formats:</p>
 <ul>
-<li><code>SparkContext.wholeTextFiles</code> lets you read a directory containing multiple small text files, and returns each of them as (filename, content) pairs. This is in contrast with <code>textFile</code>, which would return one record per line in each file.<ul>
+<li><p><code>SparkContext.wholeTextFiles</code> lets you read a directory containing multiple small text files, and returns each of them as (filename, content) pairs. This is in contrast with <code>textFile</code>, which would return one record per line in each file.</p>
+<ul>
 <li><code>SparkContext.wholeTextFiles</code>合并小文件，每一行书文件名和文件内容，类似hadoop中的tar文件</li>
 </ul>
 </li>
-<li>For <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/mapred/SequenceFileInputFormat.html" target="_blank" rel="noopener">SequenceFiles</a>, use SparkContext’s <code>sequenceFile[K, V]</code> method where <code>K</code> and <code>V</code> are the types of key and values in the file. These should be subclasses of Hadoop’s <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Writable.html" target="_blank" rel="noopener">Writable</a> interface, like <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/IntWritable.html" target="_blank" rel="noopener">IntWritable</a> and <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Text.html" target="_blank" rel="noopener">Text</a>. In addition, Spark allows you to specify native types for a few common Writables; for example, <code>sequenceFile[Int, String]</code> will automatically read IntWritables and Texts.<ul>
+<li><p>For <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/mapred/SequenceFileInputFormat.html" target="_blank" rel="noopener">SequenceFiles</a>, use SparkContext’s <code>sequenceFile[K, V]</code> method where <code>K</code> and <code>V</code> are the types of key and values in the file. These should be subclasses of Hadoop’s <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Writable.html" target="_blank" rel="noopener">Writable</a> interface, like <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/IntWritable.html" target="_blank" rel="noopener">IntWritable</a> and <a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Text.html" target="_blank" rel="noopener">Text</a>. In addition, Spark allows you to specify native types for a few common Writables; for example, <code>sequenceFile[Int, String]</code> will automatically read IntWritables and Texts.</p>
+<ul>
 <li><code>sequenceFile[K, V]</code>操作<a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/mapred/SequenceFileInputFormat.html" target="_blank" rel="noopener">SequenceFiles</a>文件，这是Hadoop的<a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Writable.html" target="_blank" rel="noopener">Writable</a>接口的子类，例如<a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/IntWritable.html" target="_blank" rel="noopener">IntWritable</a>和<a href="http://hadoop.apache.org/common/docs/current/api/org/apache/hadoop/io/Text.html" target="_blank" rel="noopener">Text</a>。没用过，不太理解。</li>
 </ul>
 </li>
-<li><h2 id="For-other-Hadoop-InputFormats-you-can-use-the-SparkContext-hadoopRDD-method-which-takes-an-arbitrary-JobConf-and-input-format-class-key-class-and-value-class-Set-these-the-same-way-you-would-for-a-Hadoop-job-with-your-input-source-You-can-also-use-SparkContext-newAPIHadoopRDD-for-InputFormats-based-on-the-“new”-MapReduce-API-org-apache-hadoop-mapreduce"><a href="#For-other-Hadoop-InputFormats-you-can-use-the-SparkContext-hadoopRDD-method-which-takes-an-arbitrary-JobConf-and-input-format-class-key-class-and-value-class-Set-these-the-same-way-you-would-for-a-Hadoop-job-with-your-input-source-You-can-also-use-SparkContext-newAPIHadoopRDD-for-InputFormats-based-on-the-“new”-MapReduce-API-org-apache-hadoop-mapreduce" class="headerlink" title="For other Hadoop InputFormats, you can use the SparkContext.hadoopRDD method, which takes an arbitrary JobConf and input format class, key class and value class. Set these the same way you would for a Hadoop job with your input source. You can also use SparkContext.newAPIHadoopRDD for InputFormats based on the “new” MapReduce API (org.apache.hadoop.mapreduce)."></a>For other Hadoop InputFormats, you can use the <code>SparkContext.hadoopRDD</code> method, which takes an arbitrary <code>JobConf</code> and input format class, key class and value class. Set these the same way you would for a Hadoop job with your input source. You can also use <code>SparkContext.newAPIHadoopRDD</code> for InputFormats based on the “new” MapReduce API (<code>org.apache.hadoop.mapreduce</code>).</h2></li>
+</ul>
+<ul>
+<li>For other Hadoop InputFormats, you can use the <code>SparkContext.hadoopRDD</code> method, which takes an arbitrary <code>JobConf</code> and input format class, key class and value class. Set these the same way you would for a Hadoop job with your input source. You can also use <code>SparkContext.newAPIHadoopRDD</code> for InputFormats based on the “new” MapReduce API (<code>org.apache.hadoop.mapreduce</code>).</li>
+</ul>
+<ul>
 <li><code>RDD.saveAsObjectFile</code> and <code>SparkContext.objectFile</code> support saving an RDD in a simple format consisting of serialized Java objects. While this is not as efficient as specialized formats like Avro, it offers an easy way to save any RDD.</li>
 </ul>
 <h3 id="5-3-RDD-Operations"><a href="#5-3-RDD-Operations" class="headerlink" title="5.3 RDD Operations"></a>5.3 RDD Operations</h3><p>RDDs support two types of operations: <em>transformations</em>, which create a new dataset from an existing one, and <em>actions</em>, which return a value to the driver program after running a computation on the dataset. For example, <code>map</code> is a transformation that passes each dataset element through a function and returns a new RDD representing the results. On the other hand, <code>reduce</code> is an action that aggregates all the elements of the RDD using some function and returns the final result to the driver program (although there is also a parallel <code>reduceByKey</code> that returns a distributed dataset). 为什么 <code>reduce(_+_)</code>会执行累加？</p>
@@ -729,7 +735,7 @@ data.map &#123; x =&gt; accum.add(x); x &#125;
                     
                       <a href="/2020/07/17/spark%E7%AE%80%E4%BB%8B/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">spark简介</span>
+                        <span class="hidden-mobile">Spark系列（一） —— Spark入门</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
@@ -738,7 +744,7 @@ data.map &#123; x =&gt; accum.add(x); x &#125;
                     
                     
                       <a href="/2020/07/11/Hive%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97%E2%80%94%E7%AC%94%E8%AE%B0%EF%BC%88%E4%BA%8C%EF%BC%89/">
-                        <span class="hidden-mobile">Hive编程指南-笔记(二)</span>
+                        <span class="hidden-mobile">Hive编程指南——笔记（二）</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
-  <title>Hive编程指南-笔记(二) - ruixinyue</title>
+  <title>Hive编程指南——笔记（二） - ruixinyue</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 
@@ -146,7 +146,7 @@
           <div class="container text-center white-text fadeInUp">
             <span class="h2" id="subtitle">
               
-                Hive编程指南-笔记(二)
+                Hive编程指南——笔记（二）
               
             </span>
 
@@ -165,7 +165,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      0 字
+      1.8k 字
     </span>
   
 
@@ -175,7 +175,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      1
+      22
        分钟
     </span>
   
@@ -206,12 +206,187 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              
+              <h1 id="Hive编程指南—笔记-二"><a href="#Hive编程指南—笔记-二" class="headerlink" title="Hive编程指南—笔记(二)"></a>Hive编程指南—笔记(二)</h1><h2 id="5-HiveQL：数据操作"><a href="#5-HiveQL：数据操作" class="headerlink" title="5. HiveQL：数据操作"></a>5. HiveQL：数据操作</h2><h3 id="5-1-向管理表中装载数据"><a href="#5-1-向管理表中装载数据" class="headerlink" title="5.1 向管理表中装载数据"></a>5.1 向管理表中装载数据</h3><ol>
+<li><p>Hive不支持行级的插入，删除，更新</p>
+</li>
+<li><pre><code>LOAD DATA LOCAL INPATH &apos;${env:HOME}/california-employees&apos;
+OVERWRITE INTO TABLE employees
+PARTITION (country = &apos;US&apos;, state = &apos;CA&apos;);
+<pre><code class="hljs angelscript">
+<span class="hljs-number">3.</span> local：本地文件系统，不加local指的是hdfs，分布式文件系统
+
+<span class="hljs-number">4.</span> overwrite：重写，删除原有数据，重新插入新的数据，
+
+<span class="hljs-number">5.</span> 不加overwrite时，如果load的数据文件和已有的同名，hive会在文件名后面加后缀，不会覆盖原有的数据
+
+<span class="hljs-number">6.</span> 一般跟的是文件夹，默认会将文件夹中所有的文件都装载到表里
+
+<span class="hljs-number">7.</span> 需要装载的数据文件格式需要跟建表时候指定的格式一样
+
+### <span class="hljs-number">5.2</span> 通过查询语句向表中插入数据
+
+<span class="hljs-number">1.</span></code></pre>
+INSERT OVERWRITE TABLE employees
+PARTITION (country = &apos;US&apos;, state = &apos;OR&apos;)
+SELECT * FROM staged_employees se
+WHERE se.cnty = &apos;US&apos; AND se.st = &apos;OR&apos;;
+<pre><code class="hljs lua">
+<span class="hljs-number">2.</span> 往一个表里需要<span class="hljs-built_in">insert</span>多个<span class="hljs-built_in">select</span>语句可以写在一起</code></pre>
+FROM staged_employees se
+INSERT OVERWRITE TABLE employees
+　PARTITION (country = &apos;US&apos;, state = &apos;OR&apos;)
+　SELECT * WHERE se.cnty = &apos;US&apos; AND se.st = &apos;OR&apos;
+INSERT OVERWRITE TABLE employees
+　PARTITION (country = &apos;US&apos;, state = &apos;CA&apos;)
+　SELECT * WHERE se.cnty = &apos;US&apos; AND se.st = &apos;CA&apos;
+INSERT OVERWRITE TABLE employees
+　PARTITION (country = &apos;US&apos;, state = &apos;IL&apos;)
+　SELECT * WHERE se.cnty = &apos;US&apos; AND se.st = &apos;IL&apos;;
+<pre><code class="hljs markdown">
+<span class="hljs-bullet">3. </span>动态分区插入：
+
+<span class="hljs-bullet">   - </span>如果需要创建非常多的分区，那么用户就需要写非常多的SQL
+
+<span class="hljs-bullet">   - </span>Hive提供了一个动态分区功能，其可以基于查询参数推断出需要创建的分区名称
+
+   -</code></pre>
+  INSERT OVERWRITE TABLE employees
+  PARTITION (country, state)
+  SELECT ..., se.cnty, se.st
+  FROM staged_employees se;
+  <pre><code class="hljs pf">
+- 是为了强调源表字段值和输出分区值之间的关系是根据位置而不是根据命名来匹配的。
+
+- 用户也可以混合使用动态和静态分区。如下这个例子中指定了country字段的值为静态的US，而分区字段<span class="hljs-keyword">state</span>是动态值：</code></pre>
+  INSERT OVERWRITE TABLE employees
+  PARTITION (country = &apos;US&apos;, state)
+  SELECT ..., se.cnty, se.st
+  FROM staged_employees se
+  WHERE se.cnty = &apos;US&apos;;
+  <pre><code class="hljs asciidoc">
+<span class="hljs-code">  静态分区键必须出现在动态分区键之前。</span>
+
+<span class="hljs-bullet">- </span>动态分区功能默认情况下没有开启。开启后，默认是以“严格”模式执行的，在这种模式下要求至少有一列分区字段是静态的。这有助于阻止因设计错误导致查询产生大量的分区。</code></pre>
+  hive&gt; set hive.exec.dynamic.partition=true;
+  hive&gt; set hive.exec.dynamic.partition.mode=nonstrict;
+  hive&gt; set hive.exec.max.dynamic.partitions.pernode=1000;
+  <pre><code class="hljs clean">
+### <span class="hljs-number">5.3</span> 单个查询语句中创建表并加载数据
+
+<span class="hljs-number">1.</span> 创建表并装载数据</code></pre>
+CREATE TABLE ca_employees
+AS SELECT name, salary, address
+FROM employees
+WHERE se.state = &apos;CA&apos;;
+<pre><code class="hljs angelscript">
+   适用于从一个宽表中取出部分数据
+
+### <span class="hljs-number">5.4</span> 导出数据
+
+<span class="hljs-number">1.</span> 如果数据格式正好是想要的，把文件直接从hdfs上拷贝下来
+
+<span class="hljs-number">2.</span> 如果不是的话，可以把数据导入来</code></pre>
+INSERT OVERWRITE LOCAL DIRECTORY &apos;/tmp/ca_employees&apos;
+SELECT name, salary, address
+FROM employees
+WHERE se.state = &apos;CA&apos;;
+<pre><code class="hljs angelscript">
+<span class="hljs-number">3.</span> 不管在源表中数据实际是怎么存储的，Hive会将所有的字段序列化成字符串写入到文件中。Hive使用和Hive内部存储的表相同的编码方式来生成输出文件。
+
+<span class="hljs-number">4.</span> 和向表中插入数据一样，用户也是可以通过如下方式指定多个输出文件夹目录的：</code></pre>
+FROM staged_employees se
+INSERT OVERWRITE DIRECTORY &apos;/tmp/or_employees&apos;
+　SELECT * WHERE se.cty = &apos;US&apos; and se.st = &apos;OR&apos;
+INSERT OVERWRITE DIRECTORY &apos;/tmp/ca_employees&apos;
+　SELECT * WHERE se.cty = &apos;US&apos; and se.st = &apos;CA&apos;
+INSERT OVERWRITE DIRECTORY &apos;/tmp/il_employees&apos;
+　SELECT * WHERE se.cty = &apos;US&apos; and se.st = &apos;IL&apos;;</code></pre></li>
+</ol>
+<h2 id="6-HiveQL：查询"><a href="#6-HiveQL：查询" class="headerlink" title="6. HiveQL：查询"></a>6. HiveQL：查询</h2><h3 id="6-1-SELECT…FROM语句"><a href="#6-1-SELECT…FROM语句" class="headerlink" title="6.1 SELECT…FROM语句"></a>6.1 SELECT…FROM语句</h3><h4 id="6-1-1-使用正则表达式指定列"><a href="#6-1-1-使用正则表达式指定列" class="headerlink" title="6.1.1 使用正则表达式指定列"></a>6.1.1 使用正则表达式指定列</h4><ol>
+<li>SELECT symbol, ‘price.*’ FROM stocks;</li>
+</ol>
+<h4 id="6-1-2-使用列值进行计算"><a href="#6-1-2-使用列值进行计算" class="headerlink" title="6.1.2 使用列值进行计算"></a>6.1.2 使用列值进行计算</h4><h4 id="6-1-3-算数表达式"><a href="#6-1-3-算数表达式" class="headerlink" title="6.1.3 算数表达式"></a>6.1.3 算数表达式</h4><ol>
+<li>和java一样</li>
+</ol>
+<h4 id="6-1-4-使用函数"><a href="#6-1-4-使用函数" class="headerlink" title="6.1.4 使用函数"></a>6.1.4 使用函数</h4><ol>
+<li>函数很多</li>
+</ol>
+<h4 id="6-1-5-LIMIT语句"><a href="#6-1-5-LIMIT语句" class="headerlink" title="6.1.5 LIMIT语句"></a>6.1.5 LIMIT语句</h4><h4 id="6-1-6-列别名"><a href="#6-1-6-列别名" class="headerlink" title="6.1.6 列别名"></a>6.1.6 列别名</h4><h4 id="6-1-7-嵌套SELECT语句"><a href="#6-1-7-嵌套SELECT语句" class="headerlink" title="6.1.7 嵌套SELECT语句"></a>6.1.7 嵌套SELECT语句</h4><ol>
+<li>嵌套子句需要起别名</li>
+</ol>
+<h4 id="6-1-8-CASW…WHEN…THEN句式"><a href="#6-1-8-CASW…WHEN…THEN句式" class="headerlink" title="6.1.8 CASW…WHEN…THEN句式"></a>6.1.8 CASW…WHEN…THEN句式</h4><h4 id="6-1-9-什么情况下Hive可以避免进行MapReduce"><a href="#6-1-9-什么情况下Hive可以避免进行MapReduce" class="headerlink" title="6.1.9 什么情况下Hive可以避免进行MapReduce"></a>6.1.9 什么情况下Hive可以避免进行MapReduce</h4><ol>
+<li>Hive中对某些情况的查询可以不必使用MapReduce，也就是所谓的本地模式</li>
+<li>SELECT * 不需要</li>
+<li>where 后面跟的是分区字段 不需要</li>
+<li>如果属性hive.exec.mode.local.auto 的值设置为true的话，Hive还会尝试使用本地模式执行其他的操作：set hive.exec.mode.local.auto=true;</li>
+</ol>
+<h3 id="6-2-Where语句"><a href="#6-2-Where语句" class="headerlink" title="6.2 Where语句"></a>6.2 Where语句</h3><h4 id="6-2-1-谓词操作符"><a href="#6-2-1-谓词操作符" class="headerlink" title="6.2.1 谓词操作符"></a>6.2.1 谓词操作符</h4><ol>
+<li>A [NOT] BETWEEN B AND C <ul>
+<li>如果A，B或者C任一为NULL，则结果为NULL。如果A的值大于或等于B，而且小于或等于C，则结果为TRUE，反之为FALSE.如果使用NOT关键字则可达到相反的效果（Hive 0.9.0版本中新增）</li>
+</ul>
+</li>
+</ol>
+<h4 id="6-2-2-关于浮点数比较"><a href="#6-2-2-关于浮点数比较" class="headerlink" title="6.2.2 关于浮点数比较"></a>6.2.2 关于浮点数比较</h4><ol>
+<li>浮点数比较很容易出现问题</li>
+<li>解决办法<ol>
+<li>保存成string类型</li>
+<li>比较的时候强转成相同的数据类型之后在进行比较</li>
+<li>设计到前相关的数据，不要保存成double类型</li>
+<li>建表的时候，跟钱相关的保存成decimal类型，其余字段尽可能保存成string类型</li>
+</ol>
+</li>
+</ol>
+<h4 id="6-2-3-LIke和RLike"><a href="#6-2-3-LIke和RLike" class="headerlink" title="6.2.3 LIke和RLike"></a>6.2.3 LIke和RLike</h4><ol>
+<li>like通过字符串的开头或结尾，以及指定特定的子字符串，或当子字符串出现在字符串内的任何位置时进行匹配。</li>
+<li>Rlike可以通过java中的正则表达式进行匹配，没进行过测试，和rep有什么区别</li>
+</ol>
+<h3 id="6-3-Group-By语句"><a href="#6-3-Group-By语句" class="headerlink" title="6.3 Group By语句"></a>6.3 Group By语句</h3><ol>
+<li><p>关键字顺序</p>
+<p>where—&gt;group by—&gt;having</p>
+</li>
+<li><p>having 可以用子查询实现一样的效果，不知道哪个效率更好</p>
+</li>
+</ol>
+<h3 id="6-4-JOIN语句"><a href="#6-4-JOIN语句" class="headerlink" title="6.4 JOIN语句"></a>6.4 JOIN语句</h3><ol>
+<li>默认是inner join</li>
+<li>只支持等值连接</li>
+<li>当对3个或者更多个表进行JOIN连接时，如果每个ON子句都使用相同的连接键的话，那么只会产生一个MapReduce job。</li>
+<li>Hive同时假定查询中最后一个表是最大的那个表。在对每行记录进行连接操作时，它会尝试将其他表缓存起来，然后扫描最后那个表进行计算。因此，用户需要保证连续查询中的表的大小从左到右是依次增加的。</li>
+<li>左半开连接（LEFT SEMI-JOIN）会返回左边表的记录，前提是其记录对于右边表满足ON语句中的判定条件</li>
+<li>内连接，外接连（全连接，左连接，右连接，左半开连接）</li>
+<li>Hive不支持右半开连接（RIGHT SEMI-JOIN）。</li>
+<li>SEMI-JOIN比通常的INNER JOIN要更高效，原因如下：对于左表中一条指定的记录，在右边表中一旦找到匹配的记录，Hive就会立即停止扫描。从这点来看，左边表中选择的列是可以预测的。</li>
+<li></li>
+</ol>
+<h3 id="6-5-Order-by和Sort-by"><a href="#6-5-Order-by和Sort-by" class="headerlink" title="6.5 Order by和Sort by"></a>6.5 Order by和Sort by</h3><ol>
+<li>order by 全局有序，一个reducer</li>
+<li>sort by 局部有序，每个reducer内有序</li>
+</ol>
+<h3 id="6-6-含有SORT-by和Distribute-by"><a href="#6-6-含有SORT-by和Distribute-by" class="headerlink" title="6.6 含有SORT by和Distribute by"></a>6.6 含有SORT by和Distribute by</h3><ol>
+<li><h3 id="6-7-Cluster-by"><a href="#6-7-Cluster-by" class="headerlink" title="6.7 Cluster by"></a>6.7 Cluster by</h3></li>
+</ol>
+<h3 id="6-8-类型转换"><a href="#6-8-类型转换" class="headerlink" title="6.8 类型转换"></a>6.8 类型转换</h3><h3 id="6-9-抽样查询"><a href="#6-9-抽样查询" class="headerlink" title="6.9 抽样查询"></a>6.9 抽样查询</h3><h3 id="6-10-Union-all"><a href="#6-10-Union-all" class="headerlink" title="6.10 Union all"></a>6.10 Union all</h3>
             </article>
             <hr>
             <div>
               <div class="post-metas mb-3">
                 
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Hive/">Hive</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Hive/">Hive</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/">读书笔记</a>
+                    
+                  </div>
                 
               </div>
               
@@ -224,7 +399,7 @@
                     
                       <a href="/2020/07/17/spark%E7%BC%96%E7%A8%8B%E6%8C%87%E5%8D%97/">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">spark编程指南</span>
+                        <span class="hidden-mobile">Spark系列（二）—— Spark编程指南</span>
                         <span class="visible-mobile">Previous</span>
                       </a>
                     
