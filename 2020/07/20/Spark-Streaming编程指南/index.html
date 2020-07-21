@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <title>Spark系列（三）-- Spark Streaming编程指南 - ruixinyue</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>ruixinyue</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+                Spark系列（三）-- Spark Streaming编程指南
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-07-20 16:41">
+      July 20, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      10.6k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      168
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h1 id="Spark-Streaming编程指南"><a href="#Spark-Streaming编程指南" class="headerlink" title="Spark Streaming编程指南"></a>Spark Streaming编程指南</h1><h2 id="1-Overview"><a href="#1-Overview" class="headerlink" title="1. Overview"></a>1. Overview</h2><p>Spark Streaming is an extension of the core Spark API that enables scalable, high-throughput, fault-tolerant stream processing of live data streams. Data can be ingested from many sources like Kafka, Flume, Kinesis, or TCP sockets, and can be processed using complex algorithms expressed with high-level functions like <code>map</code>, <code>reduce</code>, <code>join</code> and <code>window</code>. Finally, processed data can be pushed out to filesystems, databases, and live dashboards. In fact, you can apply Spark’s <a href="http://spark.apache.org/docs/2.1.2/ml-guide.html" target="_blank" rel="noopener">machine learning</a> and <a href="http://spark.apache.org/docs/2.1.2/graphx-programming-guide.html" target="_blank" rel="noopener">graph processing</a> algorithms on data streams.</p>
+<p>Spark Streaming是Spark core API的一种扩展，支持可扩展性，高吞吐和容错性的实时数据流处理。数据可来源于多种系统，例如Kafka, Flume, Kinesis, or TCP sockets，同时能利用一些复杂的函数做数据处理，比如<code>map</code>, <code>reduce</code>, <code>join</code> and <code>window</code>.处理的结果可以写入文件系统，数据库，实时仪表盘。实时上，也可以在数据流上使用机器学习和图计算。</p>
+<p><img src="http://spark.apache.org/docs/2.1.2/img/streaming-arch.png" srcset="/img/loading.gif" alt=""></p>
+<p>Internally, it works as follows. Spark Streaming receives live input data streams and divides the data into batches, which are then processed by the Spark engine to generate the final stream of results in batches.</p>
+<p>在内部，它的工作方式如下。Spark Streaming接收实时输入数据流，并将数据分为批次，然后由Spark引擎进行处理，以生成批次的最终结果流。</p>
+<p><img src="http://spark.apache.org/docs/2.1.2/img/streaming-flow.png" srcset="/img/loading.gif" alt=""></p>
+<p>Spark Streaming provides a high-level abstraction called <em>discretized stream</em> or <em>DStream</em>, which represents a continuous stream of data. DStreams can be created either from input data streams from sources such as Kafka, Flume, and Kinesis, or by applying high-level operations on other DStreams. Internally, a DStream is represented as a sequence of <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.rdd.RDD" target="_blank" rel="noopener">RDDs</a>.</p>
+<p>Spark Streaming提供了称为<em>离散流</em>或<em>DStream</em>的高级抽象，它表示连续的数据流。DStreams可以根据来自诸如Kafka，Flume和Kinesis之类的源的输入数据流来创建，也可以通过对其他DStreams应用高级操作来创建。在内部，DStream表示为<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.rdd.RDD" target="_blank" rel="noopener">RDD</a>序列 。</p>
+<p>This guide shows you how to start writing Spark Streaming programs with DStreams. You can write Spark Streaming programs in Scala, Java or Python (introduced in Spark 1.2), all of which are presented in this guide. You will find tabs throughout this guide that let you choose between code snippets of different languages.</p>
+<p><strong>Note:</strong> There are a few APIs that are either different or not available in Python. Throughout this guide, you will find the tag <strong>Python API</strong> highlighting these differences.</p>
+<h2 id="2-A-Quick-Example"><a href="#2-A-Quick-Example" class="headerlink" title="2. A Quick Example"></a>2. A Quick Example</h2><p>Before we go into the details of how to write your own Spark Streaming program, let’s take a quick look at what a simple Spark Streaming program looks like. Let’s say we want to count the number of words in text data received from a data server listening on a TCP socket. All you need to do is as follows.</p>
+<p>First, we import the names of the Spark Streaming classes and some implicit conversions from StreamingContext into our environment in order to add useful methods to other classes we need (like DStream). <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a> is the main entry point for all streaming functionality. We create a local StreamingContext with two execution threads, and a batch interval of 1 second.</p>
+<p><a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a>是所有流功能的主要入口点。我们创建具有两个执行线程和1秒批处理间隔的本地StreamingContext。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark._
+<span class="hljs-keyword">import</span> org.apache.spark.streaming._
+<span class="hljs-keyword">import</span> org.apache.spark.streaming.<span class="hljs-type">StreamingContext</span>._ <span class="hljs-comment">// not necessary since Spark 1.3</span>
+
+<span class="hljs-comment">// Create a local StreamingContext with two working thread and batch interval of 1 second.</span>
+<span class="hljs-comment">// The master requires 2 cores to prevent from a starvation scenario.</span>
+
+<span class="hljs-keyword">val</span> conf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setMaster(<span class="hljs-string">"local[2]"</span>).setAppName(<span class="hljs-string">"NetworkWordCount"</span>)
+<span class="hljs-keyword">val</span> ssc = <span class="hljs-keyword">new</span> <span class="hljs-type">StreamingContext</span>(conf, <span class="hljs-type">Seconds</span>(<span class="hljs-number">1</span>))</code></pre>
+
+<p>Using this context, we can create a DStream that represents streaming data from a TCP source, specified as hostname (e.g. <code>localhost</code>) and port (e.g. <code>9999</code>).</p>
+<pre><code class="hljs scala"><span class="hljs-comment">// Create a DStream that will connect to hostname:port, like localhost:9999</span>
+<span class="hljs-keyword">val</span> lines = ssc.socketTextStream(<span class="hljs-string">"localhost"</span>, <span class="hljs-number">9999</span>)</code></pre>
+
+<p>This <code>lines</code> DStream represents the stream of data that will be received from the data server. Each record in this DStream is a line of text. Next, we want to split the lines by space characters into words.</p>
+<pre><code class="hljs scala"><span class="hljs-comment">// Split each line into words</span>
+<span class="hljs-keyword">val</span> words = lines.flatMap(_.split(<span class="hljs-string">" "</span>))</code></pre>
+
+<p><code>flatMap</code> is a one-to-many DStream operation that creates a new DStream by generating multiple new records from each record in the source DStream. In this case, each line will be split into multiple words and the stream of words is represented as the <code>words</code> DStream. Next, we want to count these words.</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.streaming.<span class="hljs-type">StreamingContext</span>._ <span class="hljs-comment">// not necessary since Spark 1.3</span>
+<span class="hljs-comment">// Count each word in each batch</span>
+<span class="hljs-keyword">val</span> pairs = words.map(word =&gt; (word, <span class="hljs-number">1</span>))
+<span class="hljs-keyword">val</span> wordCounts = pairs.reduceByKey(_ + _)
+
+<span class="hljs-comment">// Print the first ten elements of each RDD generated in this DStream to the console</span>
+wordCounts.print()</code></pre>
+
+<p>The <code>words</code> DStream is further mapped (one-to-one transformation) to a DStream of <code>(word, 1)</code> pairs, which is then reduced to get the frequency of words in each batch of data. Finally, <code>wordCounts.print()</code> will print a few of the counts generated every second.</p>
+<p>Note that when these lines are executed, Spark Streaming only sets up the computation it will perform when it is started, and no real processing has started yet. To start the processing after all the transformations have been setup, we finally call</p>
+<pre><code class="hljs scala">ssc.start()             <span class="hljs-comment">// Start the computation</span>
+ssc.awaitTermination()  <span class="hljs-comment">// Wait for the computation to terminate</span></code></pre>
+
+<p>The complete code can be found in the Spark Streaming example <a href="https://github.com/apache/spark/blob/v2.1.2/examples/src/main/scala/org/apache/spark/examples/streaming/NetworkWordCount.scala" target="_blank" rel="noopener">NetworkWordCount</a>.</p>
+<p>If you have already <a href="http://spark.apache.org/docs/2.1.2/index.html#downloading" target="_blank" rel="noopener">downloaded</a> and <a href="http://spark.apache.org/docs/2.1.2/index.html#building" target="_blank" rel="noopener">built</a> Spark, you can run this example as follows. You will first need to run Netcat (a small utility found in most Unix-like systems) as a data server by using</p>
+<pre><code class="hljs scala">$ nc -lk <span class="hljs-number">9999</span></code></pre>
+
+<p>Then, in a different terminal, you can start the example by using</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.<span class="hljs-type">SparkConf</span>
+<span class="hljs-keyword">import</span> org.apache.spark.streaming.&#123;<span class="hljs-type">Seconds</span>, <span class="hljs-type">StreamingContext</span>&#125;
+
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">QuickExample</span> </span>&#123;
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span></span>(args: <span class="hljs-type">Array</span>[<span class="hljs-type">String</span>]): <span class="hljs-type">Unit</span> = &#123;
+    <span class="hljs-keyword">val</span> sparkConf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setAppName(<span class="hljs-string">"NetworkWordCount"</span>).setMaster(<span class="hljs-string">"local[2]"</span>)
+    <span class="hljs-keyword">val</span> streamingContext = <span class="hljs-keyword">new</span> <span class="hljs-type">StreamingContext</span>(sparkConf, <span class="hljs-type">Seconds</span>(<span class="hljs-number">1</span>))
+    <span class="hljs-keyword">val</span> line = streamingContext.socketTextStream(<span class="hljs-string">"localhost"</span>, <span class="hljs-number">9999</span>)
+    <span class="hljs-keyword">val</span> words = line.flatMap(_.split(<span class="hljs-string">" "</span>))
+    <span class="hljs-keyword">val</span> pairs = words.map(word =&gt; (word, <span class="hljs-number">1</span>))
+    <span class="hljs-keyword">val</span> wordCounts = pairs.reduceByKey(_ + _)
+    wordCounts.print()
+    <span class="hljs-comment">//开始执行，等待执行结束</span>
+    streamingContext.start()
+    streamingContext.awaitTermination()
+  &#125;
+&#125;</code></pre>
+
+
+
+<h2 id="3-Basic-Concepts"><a href="#3-Basic-Concepts" class="headerlink" title="3. Basic Concepts"></a>3. Basic Concepts</h2><p>Next, we move beyond the simple example and elaborate on the basics of Spark Streaming.</p>
+<h3 id="3-1-Linking"><a href="#3-1-Linking" class="headerlink" title="3.1 Linking"></a>3.1 Linking</h3><p>Similar to Spark, Spark Streaming is available through Maven Central. To write your own Spark Streaming program, you will have to add the following dependency to your SBT or Maven project.</p>
+<pre><code class="hljs xml"><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.spark<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spark-streaming_2.11<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.1.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre>
+
+<p>For ingesting data from sources like Kafka, Flume, and Kinesis that are not present in the Spark Streaming core API, you will have to add the corresponding artifact <code>spark-streaming-xyz_2.11</code> to the dependencies. For example, some of the common ones are as follows.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Source</th>
+<th align="left">Artifact</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">Kafka</td>
+<td align="left">spark-streaming-kafka-0-8_2.11</td>
+</tr>
+<tr>
+<td align="left">Flume</td>
+<td align="left">spark-streaming-flume_2.11</td>
+</tr>
+<tr>
+<td align="left">Kinesis</td>
+<td align="left">spark-streaming-kinesis-asl_2.11 [Amazon Software License]</td>
+</tr>
+</tbody></table>
+<h3 id="3-2-Initializing-StreamingContext"><a href="#3-2-Initializing-StreamingContext" class="headerlink" title="3.2 Initializing StreamingContext"></a>3.2 Initializing StreamingContext</h3><p>To initialize a Spark Streaming program, a <strong>StreamingContext</strong> object has to be created which is the main entry point of all Spark Streaming functionality. <strong>StreamingContext</strong> 是Streaming程序的入口。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark._
+<span class="hljs-keyword">import</span> org.apache.spark.streaming._
+
+<span class="hljs-keyword">val</span> conf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setAppName(appName).setMaster(master)
+<span class="hljs-keyword">val</span> ssc = <span class="hljs-keyword">new</span> <span class="hljs-type">StreamingContext</span>(conf, <span class="hljs-type">Seconds</span>(<span class="hljs-number">1</span>))</code></pre>
+
+<p>The <code>appName</code> parameter is a name for your application to show on the cluster UI. <code>master</code> is a <a href="http://spark.apache.org/docs/2.1.2/submitting-applications.html#master-urls" target="_blank" rel="noopener">Spark, Mesos or YARN cluster URL</a>, or a special <strong>“local[*]”</strong> string to run in local mode. In practice, when running on a cluster, you will not want to hardcode <code>master</code> in the program, but rather <a href="http://spark.apache.org/docs/2.1.2/submitting-applications.html" target="_blank" rel="noopener">launch the application with <code>spark-submit</code></a> and receive it there. However, for local testing and unit tests, you can pass “local[*]” to run Spark Streaming in-process (detects the number of cores in the local system). Note that this internally creates a <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.SparkContext" target="_blank" rel="noopener">SparkContext</a> (starting point of all Spark functionality) which can be accessed as <code>ssc.sparkContext</code>.</p>
+<ul>
+<li>在本地测试时候，可以用传入local</li>
+<li>在集群上运行时，是spark-submit传入master的，所以代码中是不用指定的</li>
+</ul>
+<p>The batch interval must be set based on the latency requirements of your application and available cluster resources.必须根据应用程序的延迟要求和可用的群集资源设置批处理间隔。 See the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#setting-the-right-batch-interval" target="_blank" rel="noopener">Performance Tuning</a> section for more details.</p>
+<p>A <code>StreamingContext</code> object can also be created from an existing <code>SparkContext</code> object.</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> sparkConf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setAppName(<span class="hljs-string">"NetworkWordCount"</span>).setMaster(<span class="hljs-string">"local[2]"</span>)
+<span class="hljs-keyword">val</span> sparkContext = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkContext</span>(sparkConf)
+<span class="hljs-keyword">val</span> streamingContext = <span class="hljs-keyword">new</span> <span class="hljs-type">StreamingContext</span>(sparkContext, <span class="hljs-type">Seconds</span>(<span class="hljs-number">1</span>))</code></pre>
+
+<p>fter a context is defined, you have to do the following.</p>
+<ol>
+<li>Define the input sources by creating input DStreams.</li>
+<li>Define the streaming computations by applying transformation and output operations to DStreams.</li>
+<li>Start receiving data and processing it using <code>streamingContext.start()</code>.</li>
+<li>Wait for the processing to be stopped (manually or due to any error) using <code>streamingContext.awaitTermination()</code>.</li>
+<li>The processing can be manually stopped using <code>streamingContext.stop()</code>.</li>
+</ol>
+<h5 id="Points-to-remember"><a href="#Points-to-remember" class="headerlink" title="Points to remember:"></a>Points to remember:</h5><ul>
+<li>Once a context has been started, no new streaming computations can be set up or added to it.</li>
+<li>Once a context has been stopped, it cannot be restarted.</li>
+<li>Only one StreamingContext can be active in a JVM at the same time.</li>
+<li>stop() on StreamingContext also stops the SparkContext. To stop only the StreamingContext, set the optional parameter of <code>stop()</code> called <code>stopSparkContext</code> to false.</li>
+<li>A SparkContext can be re-used to create multiple StreamingContexts, as long as the previous StreamingContext is stopped (without stopping the SparkContext) before the next StreamingContext is created.</li>
+</ul>
+<p>定义上下文后，您必须执行以下操作。</p>
+<ol>
+<li>通过创建输入DStream定义输入源。</li>
+<li>通过将转换和输出操作应用于DStream来定义流计算。</li>
+<li>开始接收数据并使用进行处理<code>streamingContext.start()</code>。</li>
+<li>等待使用停止处理（手动或由于任何错误）<code>streamingContext.awaitTermination()</code>。</li>
+<li>可以使用手动停止处理<code>streamingContext.stop()</code>。</li>
+</ol>
+<h5 id="要记住的要点："><a href="#要记住的要点：" class="headerlink" title="要记住的要点："></a>要记住的要点：</h5><ul>
+<li>一旦启动上下文，就无法设置新的流计算或将其添加到该流计算中。</li>
+<li>上下文一旦停止，就无法重新启动。</li>
+<li>JVM中只能同时激活一个StreamingContext。</li>
+<li>StreamingContext上的stop（）也会停止SparkContext。要仅停止的StreamingContext，设置可选的参数<code>stop()</code>叫做<code>stopSparkContext</code>假。</li>
+<li>只要在创建下一个StreamingContext之前停止了上一个StreamingContext（无需停止SparkContext），就可以将SparkContext重用于创建多个StreamingContext。</li>
+</ul>
+<h3 id="3-3-Discretized-Streams-DStreams"><a href="#3-3-Discretized-Streams-DStreams" class="headerlink" title="3.3 Discretized Streams (DStreams)"></a>3.3 Discretized Streams (DStreams)</h3><p><strong>Discretized Stream</strong> or <strong>DStream</strong> is the basic abstraction provided by Spark Streaming. It represents a continuous stream of data, either the input data stream received from source, or the processed data stream generated by transforming the input stream. Internally, a DStream is represented by a continuous series of RDDs, which is Spark’s abstraction of an immutable, distributed dataset (see <a href="http://spark.apache.org/docs/2.1.2/programming-guide.html#resilient-distributed-datasets-rdds" target="_blank" rel="noopener">Spark Programming Guide</a> for more details). Each RDD in a DStream contains data from a certain interval, as shown in the following figure.</p>
+<p><strong>离散流</strong>或<strong>DStream</strong>是Spark Streaming提供的基本抽象。它表示连续的数据流，可以是从源接收的输入数据流，也可以是通过转换输入流生成的已处理数据流。在内部，DStream由一系列连续的RDD表示，这是Spark对不可变的分布式数据集的抽象（有关更多详细信息，请参见<a href="http://spark.apache.org/docs/2.1.2/programming-guide.html#resilient-distributed-datasets-rdds" target="_blank" rel="noopener">Spark编程指南</a>）。DStream中的每个RDD都包含来自特定间隔的数据，如下图所示。</p>
+<p><img src="http://spark.apache.org/docs/2.1.2/img/streaming-dstream.png" srcset="/img/loading.gif" alt=""></p>
+<p>Any operation applied on a DStream translates to operations on the underlying RDDs. For example, in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">earlier example</a> of converting a stream of lines to words, the <code>flatMap</code> operation is applied on each RDD in the <code>lines</code> DStream to generate the RDDs of the <code>words</code> DStream. This is shown in the following figure.</p>
+<p>在DStream上执行的任何操作都转换为对基础RDD的操作。例如，在<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">较早</a>的将行流转换为单词的<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">示例</a>中，该<code>flatMap</code>操作应用于<code>lines</code>DStream中的每个RDD，以生成DStream的 <code>words</code>RDD。如下图所示。</p>
+<p><img src="http://spark.apache.org/docs/2.1.2/img/streaming-dstream-ops.png" srcset="/img/loading.gif" alt=""></p>
+<p>These underlying RDD transformations are computed by the Spark engine. The DStream operations hide most of these details and provide the developer with a higher-level API for convenience. These operations are discussed in detail in later sections.</p>
+<p>这些基础的RDD转换由Spark引擎计算。DStream操作隐藏了大多数这些细节，并为开发人员提供了更高级别的API，以方便使用。这些操作将在后面的部分中详细讨论。</p>
+<h3 id="3-4-Input-DStreams-and-Receivers"><a href="#3-4-Input-DStreams-and-Receivers" class="headerlink" title="3.4 Input DStreams and Receivers"></a>3.4 Input DStreams and Receivers</h3><p>Input DStreams are DStreams representing the stream of input data received from streaming sources. In the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">quick example</a>, <code>lines</code> was an input DStream as it represented the stream of data received from the netcat server. Every input DStream (except file stream, discussed later in this section) is associated with a <strong>Receiver</strong> (<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.receiver.Receiver" target="_blank" rel="noopener">Scala doc</a>, <a href="http://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/streaming/receiver/Receiver.html" target="_blank" rel="noopener">Java doc</a>) object which receives the data from a source and stores it in Spark’s memory for processing.</p>
+<p>输入DStream是表示从流源接收的输入数据流的DStream。在<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">快速示例中</a>，<code>lines</code>输入DStream代表从netcat服务器接收的数据流。每个输入DStream（文件流除外，本节稍后将讨论）都与一个<strong>Receiver对象</strong> （<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.receiver.Receiver" target="_blank" rel="noopener">Scala doc</a>， <a href="http://spark.apache.org/docs/2.1.2/api/java/org/apache/spark/streaming/receiver/Receiver.html" target="_blank" rel="noopener">Java doc</a>）关联，该对象从源接收数据并将其存储在Spark的内存中以进行处理。</p>
+<p>Spark Streaming provides two categories of built-in streaming sources.</p>
+<ul>
+<li><em>Basic sources</em>: Sources directly available in the StreamingContext API. Examples: file systems, and socket connections.</li>
+<li><em>Advanced sources</em>: Sources like Kafka, Flume, Kinesis, etc. are available through extra utility classes. These require linking against extra dependencies as discussed in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#linking" target="_blank" rel="noopener">linking</a> section.</li>
+</ul>
+<p>We are going to discuss some of the sources present in each category later in this section.</p>
+<p>Note that, if you want to receive multiple streams of data in parallel in your streaming application, you can create multiple input DStreams (discussed further in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#level-of-parallelism-in-data-receiving" target="_blank" rel="noopener">Performance Tuning</a> section). This will create multiple receivers which will simultaneously receive multiple data streams. But note that a Spark worker/executor is a long-running task, hence it occupies one of the cores allocated to the Spark Streaming application. Therefore, it is important to remember that a Spark Streaming application needs to be allocated enough cores (or threads, if running locally) to process the received data, as well as to run the receiver(s).</p>
+<p>Spark Streaming提供了两类内置的流媒体源。</p>
+<ul>
+<li><em>基本来源</em>：可直接在StreamingContext API中获得的来源。示例：文件系统和套接字连接。</li>
+<li><em>高级资源</em>：可以通过其他实用程序类获得诸如Kafka，Flume，Kinesis等资源。如<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#linking" target="_blank" rel="noopener">链接</a>部分所述，这些要求针对额外的依赖项进行 <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#linking" target="_blank" rel="noopener">链接</a>。</li>
+</ul>
+<p>我们将在本节后面的每个类别中讨论一些资源。</p>
+<p>请注意，如果要在流应用程序中并行接收多个数据流，则可以创建多个输入DStream（在“ <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#level-of-parallelism-in-data-receiving" target="_blank" rel="noopener">性能调整”</a>部分中进一步讨论）。这将创建多个接收器，这些接收器将同时接收多个数据流。但是请注意，Spark工作者/执行者是一项长期运行的任务，因此它占用了分配给Spark Streaming应用程序的核心之一。因此，重要的是要记住，必须为Spark Streaming应用程序分配足够的内核（或线程，如果在本地运行），以处理接收到的数据以及运行接收器。</p>
+<h5 id="Points-to-remember-1"><a href="#Points-to-remember-1" class="headerlink" title="Points to remember"></a>Points to remember</h5><ul>
+<li>When running a Spark Streaming program locally, do not use “local” or “local[1]” as the master URL. Either of these means that only one thread will be used for running tasks locally. If you are using an input DStream based on a receiver (e.g. sockets, Kafka, Flume, etc.), then the single thread will be used to run the receiver, leaving no thread for processing the received data. Hence, when running locally, always use “local[<em>n</em>]” as the master URL, where <em>n</em> &gt; number of receivers to run (see <a href="http://spark.apache.org/docs/2.1.2/configuration.html#spark-properties" target="_blank" rel="noopener">Spark Properties</a> for information on how to set the master).</li>
+<li>Extending the logic to running on a cluster, the number of cores allocated to the Spark Streaming application must be more than the number of receivers. Otherwise the system will receive data, but not be able to process it.</li>
+<li>在本地运行Spark Streaming程序时，请勿使用“ local”或“ local [1]”作为主URL。这两种方式均意味着仅一个线程将用于本地运行任务。如果您使用的是基于接收方的输入DStream（例如套接字，Kafka，Flume等），则将使用单个线程来运行接收方，而不会留下任何线程来处理接收到的数据。因此，在本地运行时，请始终使用“ local [ <em>n</em> ]”作为主URL，其中<em>n</em> &gt;要运行的接收器数（有关如何设置主服务器的信息，请参见<a href="http://spark.apache.org/docs/2.1.2/configuration.html#spark-properties" target="_blank" rel="noopener">Spark属性</a>）。</li>
+<li>为了将逻辑扩展到在集群上运行，分配给Spark Streaming应用程序的内核数必须大于接收器数。否则，系统将接收数据，但无法处理它。</li>
+</ul>
+<h4 id="3-4-1-Basic-Sources"><a href="#3-4-1-Basic-Sources" class="headerlink" title="3.4.1 Basic Sources"></a>3.4.1 Basic Sources</h4><p>We have already taken a look at the <code>ssc.socketTextStream(...)</code> in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">quick example</a> which creates a DStream from text data received over a TCP socket connection. Besides sockets, the StreamingContext API provides methods for creating DStreams from files as input sources.</p>
+<ul>
+<li><p><strong>File Streams:</strong> For reading data from files on any file system compatible with the HDFS API (that is, HDFS, S3, NFS, etc.), a DStream can be created as:</p>
+<pre><code class="hljs scala">streamingContext.fileStream[<span class="hljs-type">KeyClass</span>, <span class="hljs-type">ValueClass</span>, <span class="hljs-type">InputFormatClass</span>](dataDirectory)</code></pre>
+
+<ul>
+<li><p>Spark Streaming will monitor the directory <code>dataDirectory</code> and process any files created in that directory (files written in nested directories not supported). Note that</p>
+<ul>
+<li>The files must have the same data format.</li>
+<li>The files must be created in the <code>dataDirectory</code> by atomically <em>moving</em> or <em>renaming</em> them into the data directory.</li>
+<li>Once moved, the files must not be changed. So if the files are being continuously appended, the new data will not be read.</li>
+</ul>
+<p>For simple text files, there is an easier method <code>streamingContext.textFileStream(dataDirectory)</code>. And file streams do not require running a receiver, hence does not require allocating cores.</p>
+<p><strong>Python API</strong> <code>fileStream</code> is not available in the Python API, only <code>textFileStream</code> is available.</p>
+</li>
+<li><p><strong>Streams based on Custom Receivers:</strong> DStreams can be created with data streams received through custom receivers. See the <a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">Custom Receiver Guide</a> for more details.</p>
+</li>
+<li><p><strong>Queue of RDDs as a Stream:</strong> For testing a Spark Streaming application with test data, one can also create a DStream based on a queue of RDDs, using <code>streamingContext.queueStream(queueOfRDDs)</code>. Each RDD pushed into the queue will be treated as a batch of data in the DStream, and processed like a stream.</p>
+</li>
+</ul>
+<p>For more details on streams from sockets and files, see the API documentations of the relevant functions in <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a> for Scala, <a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaStreamingContext.html" target="_blank" rel="noopener">JavaStreamingContext</a> for Java, and <a href="http://spark.apache.org/docs/2.1.2/api/python/pyspark.streaming.html#pyspark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a> for Python.</p>
+<ul>
+<li><p>Spark Streaming将监视目录<code>dataDirectory</code>并处理在该目录中创建的任何文件（不支持在嵌套目录中写入的文件）。注意</p>
+<ul>
+<li>文件必须具有相同的数据格式。</li>
+<li>必须<code>dataDirectory</code>通过原子地<em>将</em>文件<em>移动</em>或<em>重命名</em>到数据目录中来创建文件。</li>
+<li>移动后，不得更改文件。因此，如果文件被连续追加，则不会读取新数据。</li>
+</ul>
+<p>对于简单的文本文件，有一个更简单的方法<code>streamingContext.textFileStream(dataDirectory)</code>。文件流不需要运行接收器，因此不需要分配内核。</p>
+<p><strong>Python API</strong> <code>fileStream</code>在<strong>Python API</strong>中不可用，仅 <code>textFileStream</code>可用。</p>
+</li>
+<li><p><strong>基于自定义接收器的流：</strong>可以使用通过自定义接收器接收的数据流创建DStream。有关更多详细信息，请参见《<a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">定制接收器指南》</a>。</p>
+</li>
+<li><p><strong>RDD队列作为流：</strong>为了使用测试数据测试Spark Streaming应用程序，还可以使用，基于RDD队列创建DStream <code>streamingContext.queueStream(queueOfRDDs)</code>。推送到队列中的每个RDD将被视为DStream中的一批数据，并像流一样进行处理。</p>
+</li>
+</ul>
+<p>有关套接字和文件流的更多详细信息，请参阅<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a> for Scala，<a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaStreamingContext.html" target="_blank" rel="noopener">JavaStreamingContext</a> for Java和<a href="http://spark.apache.org/docs/2.1.2/api/python/pyspark.streaming.html#pyspark.streaming.StreamingContext" target="_blank" rel="noopener">StreamingContext</a> for Python中相关功能的API文档 。</p>
+</li>
+</ul>
+<h4 id="3-4-2-Advanced-Sources"><a href="#3-4-2-Advanced-Sources" class="headerlink" title="3.4.2 Advanced Sources"></a>3.4.2 Advanced Sources</h4><p>  <strong>Python API</strong> As of Spark 2.1.2, out of these sources, Kafka, Kinesis and Flume are available in the Python API.</p>
+<p>  This category of sources require interfacing with external non-Spark libraries, some of them with complex dependencies (e.g., Kafka and Flume). Hence, to minimize issues related to version conflicts of dependencies, the functionality to create DStreams from these sources has been moved to separate libraries that can be <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#linking" target="_blank" rel="noopener">linked</a> to explicitly when necessary.</p>
+<p>  Note that these advanced sources are not available in the Spark shell, hence applications based on these advanced sources cannot be tested in the shell. If you really want to use them in the Spark shell you will have to download the corresponding Maven artifact’s JAR along with its dependencies and add it to the classpath.</p>
+<p>  <strong>Python API</strong>从Spark 2.1.2开始，<strong>Python API</strong>中提供了上述来源中的Kafka，Kinesis和Flume。</p>
+<p>  这类来源需要与外部非Spark库进行接口，其中一些库具有复杂的依存关系（例如，Kafka和Flume）。因此，为了最大程度地减少与依赖项版本冲突有关的问题，已从这些源创建DStream的功能已移至单独的库，可以在必要时显式<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#linking" target="_blank" rel="noopener">链接</a>到这些库。</p>
+<p>  请注意，Spark Shell中没有这些高级源，因此无法在Shell中测试基于这些高级源的应用程序。如果您真的想在Spark shell中使用它们，则必须下载相应的Maven工件的JAR及其依赖项，并将其添加到类路径中。</p>
+<p>  Some of these advanced sources are as follows.</p>
+<ul>
+<li><strong>Kafka:</strong> Spark Streaming 2.1.2 is compatible with Kafka broker versions 0.8.2.1 or higher. See the <a href="http://spark.apache.org/docs/2.1.2/streaming-kafka-integration.html" target="_blank" rel="noopener">Kafka Integration Guide</a> for more details.</li>
+<li><strong>Flume:</strong> Spark Streaming 2.1.2 is compatible with Flume 1.6.0. See the <a href="http://spark.apache.org/docs/2.1.2/streaming-flume-integration.html" target="_blank" rel="noopener">Flume Integration Guide</a> for more details.</li>
+<li><strong>Kinesis:</strong> Spark Streaming 2.1.2 is compatible with Kinesis Client Library 1.2.1. See the <a href="http://spark.apache.org/docs/2.1.2/streaming-kinesis-integration.html" target="_blank" rel="noopener">Kinesis Integration Guide</a> for more details.</li>
+</ul>
+<h4 id="3-4-3-Custom-Sources"><a href="#3-4-3-Custom-Sources" class="headerlink" title="3.4.3 Custom Sources"></a>3.4.3 Custom Sources</h4><p>  <strong>Python API</strong> This is not yet supported in Python.</p>
+<p>  Input DStreams can also be created out of custom data sources. All you have to do is implement a user-defined <strong>receiver</strong> (see next section to understand what that is) that can receive data from the custom sources and push it into Spark. See the <a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">Custom Receiver Guide</a> for details.</p>
+<p>  <strong>Python API Python</strong>尚不支持此功能。</p>
+<p>  输入DStream也可以从自定义数据源中创建。您所需要做的就是实现一个用户定义的<strong>接收器</strong>（请参阅下一节以了解其含义），该接收器可以接收来自自定义源的数据并将其推送到Spark中。有关详细信息，请参见《<a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">定制接收器指南</a>》。</p>
+<h4 id="3-4-4-Receiver-Reliability"><a href="#3-4-4-Receiver-Reliability" class="headerlink" title="3.4.4 Receiver Reliability"></a>3.4.4 Receiver Reliability</h4><p>  There can be two kinds of data sources based on their <em>reliability</em>. Sources (like Kafka and Flume) allow the transferred data to be acknowledged. If the system receiving data from these <em>reliable</em> sources acknowledges the received data correctly, it can be ensured that no data will be lost due to any kind of failure. This leads to two kinds of receivers:</p>
+<pre><code>1. *Reliable Receiver* - A *reliable receiver* correctly sends acknowledgment to a reliable source when the data has been received and stored in Spark with replication.
+2. *Unreliable Receiver* - An *unreliable receiver* does *not* send acknowledgment to a source. This can be used for sources that do not support acknowledgment, or even for reliable sources when one does not want or need to go into the complexity of acknowledgment.</code></pre><p>  The details of how to write a reliable receiver are discussed in the <a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">Custom Receiver Guide</a>.</p>
+<p>  根据数据<em>可靠性，</em>可以有两种数据源。源（例如Kafka和Flume）允许确认传输的数据。如果从这些<em>可靠</em>来源接收数据的系统正确地确认了接收到的数据，则可以确保不会由于任何类型的故障而丢失任何数据。这导致两种接收器：</p>
+<pre><code>1. *可靠的接收器* - *可靠的接收器*在接收到数据并通过复制将其存储在Spark中后，会正确地将确认发送到可靠的源。
+2. *不可靠的接收器* -一个*不可靠的接收器*并*没有*发送确认的资源等。可以将其用于不支持确认的来源，甚至可以用于不希望或不需要进入确认复杂性的可靠来源。</code></pre><p>  《<a href="http://spark.apache.org/docs/2.1.2/streaming-custom-receivers.html" target="_blank" rel="noopener">定制接收器指南》</a>中讨论了如何编写可靠的接收器的详细信息 。</p>
+<h3 id="3-5-Transformations-on-DStreams"><a href="#3-5-Transformations-on-DStreams" class="headerlink" title="3.5 Transformations on DStreams"></a>3.5 Transformations on DStreams</h3><p>Similar to that of RDDs, transformations allow the data from the input DStream to be modified. DStreams support many of the transformations available on normal Spark RDD’s. Some of the common ones are as follows.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Transformation</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>map</strong>(<em>func</em>)</td>
+<td align="left">Return a new DStream by passing each element of the source DStream through a function <em>func</em>.</td>
+</tr>
+<tr>
+<td align="left"><strong>flatMap</strong>(<em>func</em>)</td>
+<td align="left">Similar to map, but each input item can be mapped to 0 or more output items.</td>
+</tr>
+<tr>
+<td align="left"><strong>filter</strong>(<em>func</em>)</td>
+<td align="left">Return a new DStream by selecting only the records of the source DStream on which <em>func</em> returns true.</td>
+</tr>
+<tr>
+<td align="left"><strong>repartition</strong>(<em>numPartitions</em>)</td>
+<td align="left">Changes the level of parallelism in this DStream by creating more or fewer partitions.</td>
+</tr>
+<tr>
+<td align="left"><strong>union</strong>(<em>otherStream</em>)</td>
+<td align="left">Return a new DStream that contains the union of the elements in the source DStream and <em>otherDStream</em>.</td>
+</tr>
+<tr>
+<td align="left"><strong>count</strong>()</td>
+<td align="left">Return a new DStream of single-element RDDs by counting the number of elements in each RDD of the source DStream.</td>
+</tr>
+<tr>
+<td align="left"><strong>reduce</strong>(<em>func</em>)</td>
+<td align="left">Return a new DStream of single-element RDDs by aggregating the elements in each RDD of the source DStream using a function <em>func</em> (which takes two arguments and returns one). The function should be associative and commutative so that it can be computed in parallel.</td>
+</tr>
+<tr>
+<td align="left"><strong>countByValue</strong>()</td>
+<td align="left">When called on a DStream of elements of type K, return a new DStream of (K, Long) pairs where the value of each key is its frequency in each RDD of the source DStream.</td>
+</tr>
+<tr>
+<td align="left"><strong>reduceByKey</strong>(<em>func</em>, [<em>numTasks</em>])</td>
+<td align="left">When called on a DStream of (K, V) pairs, return a new DStream of (K, V) pairs where the values for each key are aggregated using the given reduce function. <strong>Note:</strong> By default, this uses Spark’s default number of parallel tasks (2 for local mode, and in cluster mode the number is determined by the config property <code>spark.default.parallelism</code>) to do the grouping. You can pass an optional <code>numTasks</code> argument to set a different number of tasks.</td>
+</tr>
+<tr>
+<td align="left"><strong>join</strong>(<em>otherStream</em>, [<em>numTasks</em>])</td>
+<td align="left">When called on two DStreams of (K, V) and (K, W) pairs, return a new DStream of (K, (V, W)) pairs with all pairs of elements for each key.</td>
+</tr>
+<tr>
+<td align="left"><strong>cogroup</strong>(<em>otherStream</em>, [<em>numTasks</em>])</td>
+<td align="left">When called on a DStream of (K, V) and (K, W) pairs, return a new DStream of (K, Seq[V], Seq[W]) tuples.</td>
+</tr>
+<tr>
+<td align="left"><strong>transform</strong>(<em>func</em>)</td>
+<td align="left">Return a new DStream by applying a RDD-to-RDD function to every RDD of the source DStream. This can be used to do arbitrary RDD operations on the DStream.</td>
+</tr>
+<tr>
+<td align="left"><strong>updateStateByKey</strong>(<em>func</em>)</td>
+<td align="left">Return a new “state” DStream where the state for each key is updated by applying the given function on the previous state of the key and the new values for the key. This can be used to maintain arbitrary state data for each key</td>
+</tr>
+</tbody></table>
+<p>A few of these transformations are worth discussing in more detail.</p>
+<h4 id="3-5-1-UpdateStateByKey-Operation"><a href="#3-5-1-UpdateStateByKey-Operation" class="headerlink" title="3.5.1 UpdateStateByKey Operation"></a>3.5.1 UpdateStateByKey Operation</h4><p>The <code>updateStateByKey</code> operation allows you to maintain arbitrary state while continuously updating it with new information. To use this, you will have to do two steps.</p>
+<ol>
+<li>Define the state - The state can be an arbitrary data type.</li>
+<li>Define the state update function - Specify with a function how to update the state using the previous state and the new values from an input stream.</li>
+</ol>
+<p>In every batch, Spark will apply the state update function for all existing keys, regardless of whether they have new data in a batch or not. If the update function returns <code>None</code> then the key-value pair will be eliminated.</p>
+<p>Let’s illustrate this with an example. Say you want to maintain a running count of each word seen in a text data stream. Here, the running count is the state and it is an integer. We define the update function as:</p>
+<p>该<code>updateStateByKey</code>操作使您可以保持任意状态，同时不断用新信息更新它。要使用此功能，您将必须执行两个步骤。</p>
+<ol>
+<li>定义状态-状态可以是任意数据类型。</li>
+<li>定义状态更新功能-使用功能指定如何使用输入流中的先前状态和新值来更新状态。</li>
+</ol>
+<p>在每个批次中，Spark都会对所有现有密钥应用状态更新功能，无论它们是否在批次中具有新数据。如果更新函数返回，<code>None</code>则将删除键值对。</p>
+<p>让我们用一个例子来说明。假设您要保持在文本数据流中看到的每个单词的连续计数。此处，运行计数是状态，它是整数。我们将更新函数定义为</p>
+<p><strong>不理解，具体事例有哪些？</strong></p>
+<pre><code class="hljs scala"><span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">updateFunction</span></span>(newValues: <span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>], runningCount: <span class="hljs-type">Option</span>[<span class="hljs-type">Int</span>]): <span class="hljs-type">Option</span>[<span class="hljs-type">Int</span>] = &#123;
+    <span class="hljs-keyword">val</span> newCount = ...  <span class="hljs-comment">// add the new values with the previous running count to get the new count</span>
+    <span class="hljs-type">Some</span>(newCount)
+&#125;</code></pre>
+
+<p>This is applied on a DStream containing words (say, the <code>pairs</code> DStream containing <code>(word, 1)</code> pairs in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">earlier example</a>).</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> runningCounts = pairs.updateStateByKey[<span class="hljs-type">Int</span>](updateFunction _)</code></pre>
+
+<p>The update function will be called for each word, with <code>newValues</code> having a sequence of 1’s (from the <code>(word, 1)</code> pairs) and the <code>runningCount</code> having the previous count.</p>
+<p>Note that using <code>updateStateByKey</code> requires the checkpoint directory to be configured, which is discussed in detail in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#checkpointing" target="_blank" rel="noopener">checkpointing</a> section.</p>
+<p>将为每个单词调用更新函数，每个单词<code>newValues</code>的序列为1（来自各<code>(word, 1)</code>对），并<code>runningCount</code>具有先前的计数。</p>
+<p>请注意，使用<code>updateStateByKey</code>需要配置检查点目录，这将在<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#checkpointing" target="_blank" rel="noopener">检查点</a>部分中详细讨论。</p>
+<p>对原来的状态就行记录，比如wordcount中，不断的累计单词出现的次数，flink中自动做到了。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.<span class="hljs-type">SparkConf</span>
+<span class="hljs-keyword">import</span> org.apache.spark.streaming.&#123;<span class="hljs-type">Seconds</span>, <span class="hljs-type">StreamingContext</span>&#125;
+
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">WorldCount</span> </span>&#123;
+
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span></span>(args: <span class="hljs-type">Array</span>[<span class="hljs-type">String</span>]) &#123;
+
+    <span class="hljs-comment">// 定义更新状态方法，参数values为当前批次单词频度，state为以往批次单词频度</span>
+    <span class="hljs-keyword">val</span> updateFunc = (values: <span class="hljs-type">Seq</span>[<span class="hljs-type">Int</span>], state: <span class="hljs-type">Option</span>[<span class="hljs-type">Int</span>]) =&gt; &#123;
+      <span class="hljs-keyword">val</span> currentCount = values.foldLeft(<span class="hljs-number">0</span>)(_ + _)
+      <span class="hljs-keyword">val</span> previousCount = state.getOrElse(<span class="hljs-number">0</span>)
+      <span class="hljs-type">Some</span>(currentCount + previousCount)
+    &#125;
+
+    <span class="hljs-keyword">val</span> conf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setMaster(<span class="hljs-string">"local[2]"</span>).setAppName(<span class="hljs-string">"NetworkWordCount"</span>)
+    <span class="hljs-keyword">val</span> ssc = <span class="hljs-keyword">new</span> <span class="hljs-type">StreamingContext</span>(conf, <span class="hljs-type">Seconds</span>(<span class="hljs-number">3</span>))
+    ssc.checkpoint(<span class="hljs-string">"hdfs://hadoop102:9000/streamCheck"</span>)
+
+    <span class="hljs-comment">// Create a DStream that will connect to hostname:port, like hadoop102:9999</span>
+    <span class="hljs-keyword">val</span> lines = ssc.socketTextStream(<span class="hljs-string">"hadoop102"</span>, <span class="hljs-number">9999</span>)
+    <span class="hljs-comment">// Split each line into words</span>
+    <span class="hljs-keyword">val</span> words = lines.flatMap(_.split(<span class="hljs-string">" "</span>))
+
+    <span class="hljs-comment">//import org.apache.spark.streaming.StreamingContext._ // not necessary since Spark 1.3</span>
+    <span class="hljs-comment">// Count each word in each batch</span>
+    <span class="hljs-keyword">val</span> pairs = words.map(word =&gt; (word, <span class="hljs-number">1</span>))
+
+
+    <span class="hljs-comment">// 使用updateStateByKey来更新状态，统计从运行开始以来单词总的次数</span>
+    <span class="hljs-keyword">val</span> stateDstream = pairs.updateStateByKey[<span class="hljs-type">Int</span>](updateFunc)
+    stateDstream.print()
+
+    <span class="hljs-comment">//val wordCounts = pairs.reduceByKey(_ + _)</span>
+
+    <span class="hljs-comment">// Print the first ten elements of each RDD generated in this DStream to the console</span>
+    <span class="hljs-comment">//wordCounts.print()</span>
+
+    ssc.start()             <span class="hljs-comment">// Start the computation</span>
+    ssc.awaitTermination()  <span class="hljs-comment">// Wait for the computation to terminate</span>
+    <span class="hljs-comment">//ssc.stop()</span>
+  &#125;
+
+&#125;</code></pre>
+
+<h4 id="3-5-2-Transform-Operation"><a href="#3-5-2-Transform-Operation" class="headerlink" title="3.5.2 Transform Operation"></a>3.5.2 Transform Operation</h4><p>The <code>transform</code> operation (along with its variations like <code>transformWith</code>) allows arbitrary RDD-to-RDD functions to be applied on a DStream. It can be used to apply any RDD operation that is not exposed in the DStream API. For example, the functionality of joining every batch in a data stream with another dataset is not directly exposed in the DStream API. However, you can easily use <code>transform</code> to do this. This enables very powerful possibilities. For example, one can do real-time data cleaning by joining the input data stream with precomputed spam information (maybe generated with Spark as well) and then filtering based on it.</p>
+<p>该<code>transform</code>操作（及其类似的变体<code>transformWith</code>）允许将任意RDD-to-RDD功能应用于DStream。它可用于应用DStream API中未公开的任何RDD操作。例如，将数据流中的每个批次与另一个数据集连接在一起的功能未直接在DStream API中公开。但是，您可以轻松地使用<code>transform</code>它。这实现了非常强大的可能性。例如，可以通过将输入数据流与预先计算的垃圾邮件信息（也可能由Spark生成）结合在一起，然后基于该信息进行过滤来进行实时数据清理。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> spamInfoRDD = ssc.sparkContext.newAPIHadoopRDD(...) <span class="hljs-comment">// RDD containing spam information</span>
+
+<span class="hljs-keyword">val</span> cleanedDStream = wordCounts.transform &#123; rdd =&gt;
+  rdd.join(spamInfoRDD).filter(...) <span class="hljs-comment">// join data stream with spam information to do data cleaning</span>
+  ...
+&#125;</code></pre>
+
+<p>Note that the supplied function gets called in every batch interval. This allows you to do time-varying RDD operations, that is, RDD operations, number of partitions, broadcast variables, etc. can be changed between batches.</p>
+<p>请注意，在每个批处理间隔中都会调用提供的函数。这使您可以执行随时间变化的RDD操作，即可以在批之间更改RDD操作，分区数，广播变量等。</p>
+<p>Transform 能进行rdd to rdd的转换，能实现DStream中没有提供的操作。</p>
+<h4 id="3-5-3-Window-Operations"><a href="#3-5-3-Window-Operations" class="headerlink" title="3.5.3 Window Operations"></a>3.5.3 Window Operations</h4><p>Spark Streaming also provides <em>windowed computations</em>, which allow you to apply transformations over a sliding window of data. The following figure illustrates this sliding window.</p>
+<p><img src="http://spark.apache.org/docs/2.1.2/img/streaming-dstream-window.png" srcset="/img/loading.gif" alt=""></p>
+<p>As shown in the figure, every time the window <em>slides</em> over a source DStream, the source RDDs that fall within the window are combined and operated upon to produce the RDDs of the windowed DStream. In this specific case, the operation is applied over the last 3 time units of data, and slides by 2 time units. This shows that any window operation needs to specify two parameters.</p>
+<ul>
+<li><em>window length</em> - The duration of the window (3 in the figure).</li>
+<li><em>sliding interval</em> - The interval at which the window operation is performed (2 in the figure).</li>
+</ul>
+<p>These two parameters must be multiples of the batch interval of the source DStream (1 in the figure).</p>
+<p>如该图所示，每当窗口<em>滑动</em>在源DSTREAM，落入窗口内的源RDDS被组合及操作以产生RDDS的窗DSTREAM。在此特定情况下，该操作将应用于数据的最后3个时间单位，并以2个时间单位滑动。这表明任何窗口操作都需要指定两个参数。</p>
+<ul>
+<li><em>窗口长度</em> - <em>窗口</em>的持续时间（图中3）。</li>
+<li><em>滑动间隔</em> -执行窗口操作的间隔（图中为2）。</li>
+</ul>
+<p>这两个参数必须是源DStream的批处理间隔的倍数（图中为1）。</p>
+<p>Let’s illustrate the window operations with an example. Say, you want to extend the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">earlier example</a> by generating word counts over the last 30 seconds of data, every 10 seconds. To do this, we have to apply the <code>reduceByKey</code> operation on the <code>pairs</code> DStream of <code>(word, 1)</code> pairs over the last 30 seconds of data. This is done using the operation <code>reduceByKeyAndWindow</code>.</p>
+<p>让我们用一个例子来说明窗口操作。假设您要扩展 <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">前面的示例</a>，方法是每10秒在数据的最后30秒生成一次字数统计。为此，我们必须在最后30秒的数据<code>reduceByKey</code>上对<code>pairs</code>DStream <code>(word, 1)</code>对应用该操作。这是通过操作完成的<code>reduceByKeyAndWindow</code>。</p>
+<pre><code class="hljs scala"><span class="hljs-comment">// Reduce last 30 seconds of data, every 10 seconds</span>
+<span class="hljs-keyword">val</span> windowedWordCounts = pairs.reduceByKeyAndWindow((a:<span class="hljs-type">Int</span>,b:<span class="hljs-type">Int</span>) =&gt; (a + b), <span class="hljs-type">Seconds</span>(<span class="hljs-number">30</span>), <span class="hljs-type">Seconds</span>(<span class="hljs-number">10</span>))</code></pre>
+
+<p>Some of the common window operations are as follows. All of these operations take the said two parameters - <em>windowLength</em> and <em>slideInterval</em>.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Transformation</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>window</strong>(<em>windowLength</em>, <em>slideInterval</em>)</td>
+<td align="left">Return a new DStream which is computed based on windowed batches of the source DStream.</td>
+</tr>
+<tr>
+<td align="left"><strong>countByWindow</strong>(<em>windowLength</em>, <em>slideInterval</em>)</td>
+<td align="left">Return a sliding window count of elements in the stream.</td>
+</tr>
+<tr>
+<td align="left"><strong>reduceByWindow</strong>(<em>func</em>, <em>windowLength</em>, <em>slideInterval</em>)</td>
+<td align="left">Return a new single-element stream, created by aggregating elements in the stream over a sliding interval using <em>func</em>. The function should be associative and commutative so that it can be computed correctly in parallel.</td>
+</tr>
+<tr>
+<td align="left"><strong>reduceByKeyAndWindow</strong>(<em>func</em>, <em>windowLength</em>, <em>slideInterval</em>, [<em>numTasks</em>])</td>
+<td align="left">When called on a DStream of (K, V) pairs, returns a new DStream of (K, V) pairs where the values for each key are aggregated using the given reduce function <em>func</em> over batches in a sliding window. <strong>Note:</strong> By default, this uses Spark’s default number of parallel tasks (2 for local mode, and in cluster mode the number is determined by the config property <code>spark.default.parallelism</code>) to do the grouping. You can pass an optional <code>numTasks</code> argument to set a different number of tasks.</td>
+</tr>
+<tr>
+<td align="left"><strong>reduceByKeyAndWindow</strong>(<em>func</em>, <em>invFunc</em>, <em>windowLength</em>, <em>slideInterval</em>, [<em>numTasks</em>])</td>
+<td align="left">A more efficient version of the above <code>reduceByKeyAndWindow()</code> where the reduce value of each window is calculated incrementally using the reduce values of the previous window. This is done by reducing the new data that enters the sliding window, and “inverse reducing” the old data that leaves the window. An example would be that of “adding” and “subtracting” counts of keys as the window slides. However, it is applicable only to “invertible reduce functions”, that is, those reduce functions which have a corresponding “inverse reduce” function (taken as parameter <em>invFunc</em>). Like in <code>reduceByKeyAndWindow</code>, the number of reduce tasks is configurable through an optional argument. Note that <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#checkpointing" target="_blank" rel="noopener">checkpointing</a> must be enabled for using this operation.</td>
+</tr>
+<tr>
+<td align="left"><strong>countByValueAndWindow</strong>(<em>windowLength</em>, <em>slideInterval</em>, [<em>numTasks</em>])</td>
+<td align="left">When called on a DStream of (K, V) pairs, returns a new DStream of (K, Long) pairs where the value of each key is its frequency within a sliding window. Like in <code>reduceByKeyAndWindow</code>, the number of reduce tasks is configurable through an optional argument.</td>
+</tr>
+</tbody></table>
+<h4 id="3-5-4-Join-Operations"><a href="#3-5-4-Join-Operations" class="headerlink" title="3.5.4 Join Operations"></a>3.5.4 Join Operations</h4><p>Finally, its worth highlighting how easily you can perform different kinds of joins in Spark Streaming.</p>
+<h5 id="Stream-stream-joins"><a href="#Stream-stream-joins" class="headerlink" title="Stream-stream joins"></a>Stream-stream joins</h5><p>Streams can be very easily joined with other streams.</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> stream1: <span class="hljs-type">DStream</span>[<span class="hljs-type">String</span>, <span class="hljs-type">String</span>] = ...
+<span class="hljs-keyword">val</span> stream2: <span class="hljs-type">DStream</span>[<span class="hljs-type">String</span>, <span class="hljs-type">String</span>] = ...
+<span class="hljs-keyword">val</span> joinedStream = stream1.join(stream2)</code></pre>
+
+<p>Here, in each batch interval, the RDD generated by <code>stream1</code> will be joined with the RDD generated by <code>stream2</code>. You can also do <code>leftOuterJoin</code>, <code>rightOuterJoin</code>, <code>fullOuterJoin</code>. Furthermore, it is often very useful to do joins over windows of the streams. That is pretty easy as well.</p>
+<p>在此，在每个批处理间隔中，生成的RDD <code>stream1</code>将与生成的RDD合并在一起<code>stream2</code>。你也可以做<code>leftOuterJoin</code>，<code>rightOuterJoin</code>，<code>fullOuterJoin</code>。此外，在流的窗口上进行联接通常非常有用。这也很容易。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> windowedStream1 = stream1.window(<span class="hljs-type">Seconds</span>(<span class="hljs-number">20</span>))
+<span class="hljs-keyword">val</span> windowedStream2 = stream2.window(<span class="hljs-type">Minutes</span>(<span class="hljs-number">1</span>))
+<span class="hljs-keyword">val</span> joinedStream = windowedStream1.join(windowedStream2)</code></pre>
+
+<h5 id="Stream-dataset-joins"><a href="#Stream-dataset-joins" class="headerlink" title="Stream-dataset joins"></a>Stream-dataset joins</h5><p>This has already been shown earlier while explain <code>DStream.transform</code> operation. Here is yet another example of joining a windowed stream with a dataset.</p>
+<p>这已经在前面解释<code>DStream.transform</code>操作时显示过了。这是将窗口流与数据集结合在一起的另一个示例。类似黑名单例子。</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">val</span> dataset: <span class="hljs-type">RDD</span>[<span class="hljs-type">String</span>, <span class="hljs-type">String</span>] = ...
+<span class="hljs-keyword">val</span> windowedStream = stream.window(<span class="hljs-type">Seconds</span>(<span class="hljs-number">20</span>))...
+<span class="hljs-keyword">val</span> joinedStream = windowedStream.transform &#123; rdd =&gt; rdd.join(dataset) &#125;</code></pre>
+
+<p>In fact, you can also dynamically change the dataset you want to join against. The function provided to <code>transform</code> is evaluated every batch interval and therefore will use the current dataset that <code>dataset</code> reference points to.</p>
+<p>The complete list of DStream transformations is available in the API documentation. For the Scala API, see <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.dstream.DStream" target="_blank" rel="noopener">DStream</a> and <a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.dstream.PairDStreamFunctions" target="_blank" rel="noopener">PairDStreamFunctions</a>. For the Java API, see <a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaDStream.html" target="_blank" rel="noopener">JavaDStream</a> and <a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaPairDStream.html" target="_blank" rel="noopener">JavaPairDStream</a>. For the Python API, see <a href="http://spark.apache.org/docs/2.1.2/api/python/pyspark.streaming.html#pyspark.streaming.DStream" target="_blank" rel="noopener">DStream</a>.</p>
+<p>实际上，您还可以动态更改要加入的数据集。<code>transform</code>每个批次间隔都会评估提供给该函数的功能，因此将使用<code>dataset</code>参考所指向的当前数据集。 </p>
+<p>API文档中提供了DStream转换的完整列表。有关Scala API，请参见<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.dstream.DStream" target="_blank" rel="noopener">DStream</a> 和<a href="http://spark.apache.org/docs/2.1.2/api/scala/index.html#org.apache.spark.streaming.dstream.PairDStreamFunctions" target="_blank" rel="noopener">PairDStreamFunctions</a>。有关Java API，请参见<a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaDStream.html" target="_blank" rel="noopener">JavaDStream</a> 和<a href="http://spark.apache.org/docs/2.1.2/api/java/index.html?org/apache/spark/streaming/api/java/JavaPairDStream.html" target="_blank" rel="noopener">JavaPairDStream</a>。有关Python API，请参见<a href="http://spark.apache.org/docs/2.1.2/api/python/pyspark.streaming.html#pyspark.streaming.DStream" target="_blank" rel="noopener">DStream</a>。</p>
+<h3 id="3-6-Output-Operations-on-DStreams"><a href="#3-6-Output-Operations-on-DStreams" class="headerlink" title="3.6 Output Operations on DStreams"></a>3.6 Output Operations on DStreams</h3><p>Output operations allow DStream’s data to be pushed out to external systems like a database or a file systems. Since the output operations actually allow the transformed data to be consumed by external systems, they trigger the actual execution of all the DStream transformations (similar to actions for RDDs). Currently, the following output operations are defined:</p>
+<p>输出操作允许将DStream的数据推出到外部系统，例如数据库或文件系统。由于输出操作实际上允许外部系统使用转换后的数据，因此它们会触发所有DStream转换的实际执行（类似于RDD的操作）。当前，定义了以下输出操作：</p>
+<table>
+<thead>
+<tr>
+<th align="left">Output Operation</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>print</strong>()</td>
+<td align="left">Prints the first ten elements of every batch of data in a DStream on the driver node running the streaming application. This is useful for development and debugging. <strong>Python API</strong> This is called <strong>pprint()</strong> in the Python API.</td>
+</tr>
+<tr>
+<td align="left"><strong>saveAsTextFiles</strong>(<em>prefix</em>, [<em>suffix</em>])</td>
+<td align="left">Save this DStream’s contents as text files. The file name at each batch interval is generated based on <em>prefix</em> and <em>suffix</em>: *”prefix-TIME_IN_MS[.suffix]”*.</td>
+</tr>
+<tr>
+<td align="left"><strong>saveAsObjectFiles</strong>(<em>prefix</em>, [<em>suffix</em>])</td>
+<td align="left">Save this DStream’s contents as <code>SequenceFiles</code> of serialized Java objects. The file name at each batch interval is generated based on <em>prefix</em> and <em>suffix</em>: *”prefix-TIME_IN_MS[.suffix]”<em>. *</em>Python API** This is not available in the Python API.</td>
+</tr>
+<tr>
+<td align="left"><strong>saveAsHadoopFiles</strong>(<em>prefix</em>, [<em>suffix</em>])</td>
+<td align="left">Save this DStream’s contents as Hadoop files. The file name at each batch interval is generated based on <em>prefix</em> and <em>suffix</em>: *”prefix-TIME_IN_MS[.suffix]”<em>. *</em>Python API** This is not available in the Python API.</td>
+</tr>
+<tr>
+<td align="left"><strong>foreachRDD</strong>(<em>func</em>)</td>
+<td align="left">The most generic output operator that applies a function, <em>func</em>, to each RDD generated from the stream. This function should push the data in each RDD to an external system, such as saving the RDD to files, or writing it over the network to a database. Note that the function <em>func</em> is executed in the driver process running the streaming application, and will usually have RDD actions in it that will force the computation of the streaming RDDs.</td>
+</tr>
+</tbody></table>
+<h3 id="3-7-Design-Patterns-for-using-foreachRDD"><a href="#3-7-Design-Patterns-for-using-foreachRDD" class="headerlink" title="3.7 Design Patterns for using foreachRDD"></a>3.7 Design Patterns for using foreachRDD</h3><p><code>dstream.foreachRDD</code> is a powerful primitive that allows data to be sent out to external systems. However, it is important to understand how to use this primitive correctly and efficiently. Some of the common mistakes to avoid are as follows.</p>
+<p>Often writing data to external system requires creating a connection object (e.g. TCP connection to a remote server) and using it to send data to a remote system. For this purpose, a developer may inadvertently try creating a connection object at the Spark driver, and then try to use it in a Spark worker to save records in the RDDs. For example (in Scala),</p>
+<p><code>dstream.foreachRDD</code>是一个强大的原语，可以将数据发送到外部系统。但是，重要的是要了解如何正确有效地使用此原语。应避免的一些常见错误如下。</p>
+<p>通常，将数据写入外部系统需要创建一个连接对象（例如，到远程服务器的TCP连接），并使用该对象将数据发送到远程系统。为此，开发人员可能会无意间尝试在Spark驱动程序中创建连接对象，然后尝试在Spark辅助程序中使用该对象以将记录保存在RDD中。例如（在Scala中），</p>
+<pre><code class="hljs scala">dstream.foreachRDD &#123; rdd =&gt;
+  <span class="hljs-keyword">val</span> connection = createNewConnection()  <span class="hljs-comment">// executed at the driver</span>
+  rdd.foreach &#123; record =&gt;
+    connection.send(record) <span class="hljs-comment">// executed at the worker</span>
+  &#125;
+&#125;</code></pre>
+
+<p>This is incorrect as this requires the connection object to be serialized and sent from the driver to the worker. Such connection objects are rarely transferable across machines. This error may manifest as serialization errors (connection object not serializable), initialization errors (connection object needs to be initialized at the workers), etc. The correct solution is to create the connection object at the worker.</p>
+<p>However, this can lead to another common mistake - creating a new connection for every record. For example,</p>
+<p>这是不正确的，因为这需要将连接对象序列化并从驱动程序发送给工作程序。这样的连接对象很少能在机器之间转移。此错误可能表现为序列化错误（连接对象不可序列化），初始化错误（连接对象需要在工作程序中初始化）等。正确的解决方案是在工作程序中创建连接对象。</p>
+<p>但是，这可能会导致另一个常见错误-为每个记录创建一个新的连接。例如，</p>
+<pre><code class="hljs scala">dstream.foreachRDD &#123; rdd =&gt;
+  rdd.foreach &#123; record =&gt;
+    <span class="hljs-keyword">val</span> connection = createNewConnection()
+    connection.send(record)
+    connection.close()
+  &#125;
+&#125;</code></pre>
+
+<p>Typically, creating a connection object has time and resource overheads. Therefore, creating and destroying a connection object for each record can incur unnecessarily high overheads and can significantly reduce the overall throughput of the system. A better solution is to use <code>rdd.foreachPartition</code> - create a single connection object and send all the records in a RDD partition using that connection.</p>
+<p>通常，创建连接对象会浪费时间和资源。因此，为每个记录创建和销毁连接对象会导致不必要的高开销，并且会大大降低系统的整体吞吐量。更好的解决方案是使用 <code>rdd.foreachPartition</code>-创建单个连接对象，并使用该连接在RDD分区中发送所有记录。</p>
+<pre><code class="hljs scala">dstream.foreachRDD &#123; rdd =&gt;
+  rdd.foreachPartition &#123; partitionOfRecords =&gt;
+    <span class="hljs-keyword">val</span> connection = createNewConnection()
+    partitionOfRecords.foreach(record =&gt; connection.send(record))
+    connection.close()
+  &#125;
+&#125;</code></pre>
+
+<p>This amortizes the connection creation overheads over many records.</p>
+<p>Finally, this can be further optimized by reusing connection objects across multiple RDDs/batches. One can maintain a static pool of connection objects than can be reused as RDDs of multiple batches are pushed to the external system, thus further reducing the overheads.</p>
+<p>这将分摊许多记录上的连接创建开销。</p>
+<p>最后，可以通过在多个RDD /批次之间重用连接对象来进一步优化。与将多个批次的RDD推送到外部系统时可以重用的连接对象相比，它可以维护一个静态的连接对象池，从而进一步减少了开销。</p>
+<pre><code class="hljs scala">dstream.foreachRDD &#123; rdd =&gt;
+  rdd.foreachPartition &#123; partitionOfRecords =&gt;
+    <span class="hljs-comment">// ConnectionPool is a static, lazily initialized pool of connections</span>
+    <span class="hljs-keyword">val</span> connection = <span class="hljs-type">ConnectionPool</span>.getConnection()
+    partitionOfRecords.foreach(record =&gt; connection.send(record))
+    <span class="hljs-type">ConnectionPool</span>.returnConnection(connection)  <span class="hljs-comment">// return to the pool for future reuse</span>
+  &#125;
+&#125;</code></pre>
+
+<p>Note that the connections in the pool should be lazily created on demand and timed out if not used for a while. This achieves the most efficient sending of data to external systems.</p>
+<p>请注意，应按需延迟创建池中的连接，如果一段时间不使用，则超时。这样可以最有效地将数据发送到外部系统。</p>
+<h5 id="Other-points-to-remember"><a href="#Other-points-to-remember" class="headerlink" title="Other points to remember:"></a>Other points to remember:</h5><ul>
+<li>DStreams are executed lazily by the output operations, just like RDDs are lazily executed by RDD actions. Specifically, RDD actions inside the DStream output operations force the processing of the received data. Hence, if your application does not have any output operation, or has output operations like <code>dstream.foreachRDD()</code> without any RDD action inside them, then nothing will get executed. The system will simply receive the data and discard it.</li>
+<li>By default, output operations are executed one-at-a-time. And they are executed in the order they are defined in the application.</li>
+</ul>
+<h5 id="其他要记住的要点："><a href="#其他要记住的要点：" class="headerlink" title="其他要记住的要点："></a>其他要记住的要点：</h5><ul>
+<li>DStream由输出操作延迟执行，就像RDD由RDD操作延迟执行一样。具体来说，DStream输出操作内部的RDD动作会强制处理接收到的数据。因此，如果您的应用程序没有任何输出操作，或者<code>dstream.foreachRDD()</code>内部没有任何RDD操作，就不会执行任何输出操作。系统将仅接收数据并将其丢弃。</li>
+<li>默认情况下，输出操作一次执行一次。它们按照在应用程序中定义的顺序执行。</li>
+</ul>
+<h3 id="3-8-DataFrame-and-SQL-Operations"><a href="#3-8-DataFrame-and-SQL-Operations" class="headerlink" title="3.8 DataFrame and SQL Operations"></a>3.8 DataFrame and SQL Operations</h3><p>You can easily use <a href="http://spark.apache.org/docs/2.1.2/sql-programming-guide.html" target="_blank" rel="noopener">DataFrames and SQL</a> operations on streaming data. You have to create a SparkSession using the SparkContext that the StreamingContext is using. Furthermore this has to done such that it can be restarted on driver failures. This is done by creating a lazily instantiated singleton instance of SparkSession. This is shown in the following example. It modifies the earlier <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">word count example</a> to generate word counts using DataFrames and SQL. Each RDD is converted to a DataFrame, registered as a temporary table and then queried using SQL.</p>
+<p>您可以轻松地对流数据使用<a href="http://spark.apache.org/docs/2.1.2/sql-programming-guide.html" target="_blank" rel="noopener">DataFrames和SQL</a>操作。您必须使用StreamingContext使用的SparkContext创建一个SparkSession。此外，必须这样做，以便可以在驱动程序故障时重新启动它。这是通过创建SparkSession的延迟实例化单例实例来完成的。在下面的示例中显示。它修改了前面的<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#a-quick-example" target="_blank" rel="noopener">单词计数示例，</a>以使用DataFrames和SQL生成单词计数。每个RDD都转换为一个DataFrame，注册为临时表，然后使用SQL查询。</p>
+<pre><code class="hljs scala"><span class="hljs-comment">/** DataFrame operations inside your streaming program */</span>
+
+<span class="hljs-keyword">val</span> words: <span class="hljs-type">DStream</span>[<span class="hljs-type">String</span>] = ...
+
+words.foreachRDD &#123; rdd =&gt;
+
+  <span class="hljs-comment">// Get the singleton instance of SparkSession</span>
+  <span class="hljs-keyword">val</span> spark = <span class="hljs-type">SparkSession</span>.builder.config(rdd.sparkContext.getConf).getOrCreate()
+  <span class="hljs-keyword">import</span> spark.implicits._
+
+  <span class="hljs-comment">// Convert RDD[String] to DataFrame</span>
+  <span class="hljs-keyword">val</span> wordsDataFrame = rdd.toDF(<span class="hljs-string">"word"</span>)
+
+  <span class="hljs-comment">// Create a temporary view</span>
+  wordsDataFrame.createOrReplaceTempView(<span class="hljs-string">"words"</span>)
+
+  <span class="hljs-comment">// Do word count on DataFrame using SQL and print it</span>
+  <span class="hljs-keyword">val</span> wordCountsDataFrame = 
+    spark.sql(<span class="hljs-string">"select word, count(*) as total from words group by word"</span>)
+  wordCountsDataFrame.show()
+&#125;</code></pre>
+
+<p>See the full <a href="https://github.com/apache/spark/blob/v2.1.2/examples/src/main/scala/org/apache/spark/examples/streaming/SqlNetworkWordCount.scala" target="_blank" rel="noopener">source code</a>.</p>
+<p>You can also run SQL queries on tables defined on streaming data from a different thread (that is, asynchronous to the running StreamingContext). Just make sure that you set the StreamingContext to remember a sufficient amount of streaming data such that the query can run. Otherwise the StreamingContext, which is unaware of the any asynchronous SQL queries, will delete off old streaming data before the query can complete. For example, if you want to query the last batch, but your query can take 5 minutes to run, then call <code>streamingContext.remember(Minutes(5))</code> (in Scala, or equivalent in other languages).</p>
+<p>See the <a href="http://spark.apache.org/docs/2.1.2/sql-programming-guide.html" target="_blank" rel="noopener">DataFrames and SQL</a> guide to learn more about DataFrames.</p>
+<p>您还可以在来自不同线程的流数据定义的表上运行SQL查询（即与正在运行的StreamingContext异步）。只需确保将StreamingContext设置为记住足够的流数据即可运行查询。否则，不知道任何异步SQL查询的StreamingContext将在查询完成之前删除旧的流数据。例如，如果您要查询最后一批，但是查询可能需要5分钟才能运行，然后调用<code>streamingContext.remember(Minutes(5))</code>（使用Scala或其他语言的等效语言）。</p>
+<h3 id="3-9-MLlib-Operations"><a href="#3-9-MLlib-Operations" class="headerlink" title="3.9 MLlib Operations"></a>3.9 MLlib Operations</h3><p>You can also easily use machine learning algorithms provided by <a href="http://spark.apache.org/docs/2.1.2/ml-guide.html" target="_blank" rel="noopener">MLlib</a>. First of all, there are streaming machine learning algorithms (e.g. <a href="http://spark.apache.org/docs/2.1.2/mllib-linear-methods.html#streaming-linear-regression" target="_blank" rel="noopener">Streaming Linear Regression</a>, <a href="http://spark.apache.org/docs/2.1.2/mllib-clustering.html#streaming-k-means" target="_blank" rel="noopener">Streaming KMeans</a>, etc.) which can simultaneously learn from the streaming data as well as apply the model on the streaming data. Beyond these, for a much larger class of machine learning algorithms, you can learn a learning model offline (i.e. using historical data) and then apply the model online on streaming data. See the <a href="http://spark.apache.org/docs/2.1.2/ml-guide.html" target="_blank" rel="noopener">MLlib</a> guide for more details.</p>
+<p>您还可以轻松使用<a href="http://spark.apache.org/docs/2.1.2/ml-guide.html" target="_blank" rel="noopener">MLlib</a>提供的机器学习算法。首先，有流机器学习算法（例如，<a href="http://spark.apache.org/docs/2.1.2/mllib-linear-methods.html#streaming-linear-regression" target="_blank" rel="noopener">流线性回归</a>，<a href="http://spark.apache.org/docs/2.1.2/mllib-clustering.html#streaming-k-means" target="_blank" rel="noopener">流KMeans</a>等），它们可以同时从流数据中学习并将模型应用于流数据。除此之外，对于更多种类的机器学习算法，您可以离线学习学习模型（即使用历史数据），然后在线将模型应用于流数据。有关更多详细信息，请参见<a href="http://spark.apache.org/docs/2.1.2/ml-guide.html" target="_blank" rel="noopener">MLlib</a>指南。</p>
+<hr>
+<h3 id="3-10-Caching-Persistence"><a href="#3-10-Caching-Persistence" class="headerlink" title="3.10 Caching / Persistence"></a>3.10 Caching / Persistence</h3><p>Similar to RDDs, DStreams also allow developers to persist the stream’s data in memory. That is, using the <code>persist()</code> method on a DStream will automatically persist every RDD of that DStream in memory. This is useful if the data in the DStream will be computed multiple times (e.g., multiple operations on the same data). For window-based operations like <code>reduceByWindow</code> and <code>reduceByKeyAndWindow</code> and state-based operations like <code>updateStateByKey</code>, this is implicitly true. Hence, DStreams generated by window-based operations are automatically persisted in memory, without the developer calling <code>persist()</code>.</p>
+<p>For input streams that receive data over the network (such as, Kafka, Flume, sockets, etc.), the default persistence level is set to replicate the data to two nodes for fault-tolerance.</p>
+<p>Note that, unlike RDDs, the default persistence level of DStreams keeps the data serialized in memory. This is further discussed in the <a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#memory-tuning" target="_blank" rel="noopener">Performance Tuning</a> section. More information on different persistence levels can be found in the <a href="http://spark.apache.org/docs/2.1.2/programming-guide.html#rdd-persistence" target="_blank" rel="noopener">Spark Programming Guide</a>.</p>
+<p>与RDD相似，DStream也允许开发人员将流的数据持久存储在内存中。也就是说，<code>persist()</code>在DStream上使用该方法将自动将该DStream的每个RDD持久存储在内存中。如果DStream中的数据将被多次计算（例如，对同一数据进行多次操作），这将很有用。对于和的基于窗口的操作<code>reduceByWindow</code>和 <code>reduceByKeyAndWindow</code>和的基于状态的操作<code>updateStateByKey</code>，这都是隐含的。因此，由基于窗口的操作生成的DStream会自动保存在内存中，而无需开发人员调用<code>persist()</code>。</p>
+<p>对于通过网络接收数据的输入流（例如Kafka，Flume，套接字等），默认的持久性级别设置为将数据复制到两个节点以实现容错。</p>
+<p>请注意，与RDD不同，DStream的默认持久性级别将数据序列化在内存中。<a href="http://spark.apache.org/docs/2.1.2/streaming-programming-guide.html#memory-tuning" target="_blank" rel="noopener">性能调整</a>部分将对此进行进一步讨论。有关不同持久性级别的更多信息，请参见《<a href="http://spark.apache.org/docs/2.1.2/programming-guide.html#rdd-persistence" target="_blank" rel="noopener">Spark编程指南》</a>。</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Spark/">Spark</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Spark/">Spark</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/07/21/Spark-SQL-DataFrames-and-Datasets-Guide/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Spark系列（四）-- Spark SQL, DataFrames and Datasets Guide</span>
+                        <span class="visible-mobile">Previous</span>
+                      </a>
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/17/spark%E7%AE%80%E4%BB%8B/">
+                        <span class="hidden-mobile">Spark系列（一） —— Spark入门</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
