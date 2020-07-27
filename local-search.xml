@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>scala读取配置文件</title>
+    <link href="/2020/07/27/scala%E8%AF%BB%E5%8F%96%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/"/>
+    <url>/2020/07/27/scala%E8%AF%BB%E5%8F%96%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/</url>
+    
+    <content type="html"><![CDATA[<h2 id="scala读取配置文件"><a href="#scala读取配置文件" class="headerlink" title="scala读取配置文件"></a>scala读取配置文件</h2><p><strong>项目内的配置文件</strong></p><h3 id="方法一：使用FileBasedConfigurationBuilder"><a href="#方法一：使用FileBasedConfigurationBuilder" class="headerlink" title="方法一：使用FileBasedConfigurationBuilder"></a>方法一：使用FileBasedConfigurationBuilder</h3><pre><code class="hljs scala"><span class="hljs-keyword">package</span> conf<span class="hljs-keyword">import</span> org.apache.commons.configuration2.&#123;<span class="hljs-type">FileBasedConfiguration</span>, <span class="hljs-type">PropertiesConfiguration</span>&#125;<span class="hljs-keyword">import</span> org.apache.commons.configuration2.builder.<span class="hljs-type">FileBasedConfigurationBuilder</span><span class="hljs-keyword">import</span> org.apache.commons.configuration2.builder.fluent.<span class="hljs-type">Parameters</span><span class="hljs-comment">/**</span><span class="hljs-comment"> * 读取配置文件</span><span class="hljs-comment"> * 方法一：</span><span class="hljs-comment"> * 使用FileBasedConfigurationBuilder,基于文件配置生成器</span><span class="hljs-comment"> */</span><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">ConfigManagerFileBased</span> </span>&#123;  <span class="hljs-comment">// 创建用于初始化配置生成器实例的参数对象</span>  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> params = <span class="hljs-keyword">new</span> <span class="hljs-type">Parameters</span>()  <span class="hljs-comment">// FileBasedConfigurationBuilder:产生一个传入的类的实例对象</span>  <span class="hljs-comment">// FileBasedConfiguration:融合FileBased与Configuration的接口</span>  <span class="hljs-comment">// PropertiesConfiguration:从一个或者多个文件读取配置的标准配置加载器</span>  <span class="hljs-comment">// configure():通过params实例初始化配置生成器</span>  <span class="hljs-comment">// 向FileBasedConfigurationBuilder()中传入一个标准配置加载器类，生成一个加载器类的实例对象，然后通过params参数对其初始化</span>  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> builder: <span class="hljs-type">FileBasedConfigurationBuilder</span>[<span class="hljs-type">FileBasedConfiguration</span>] = <span class="hljs-keyword">new</span> <span class="hljs-type">FileBasedConfigurationBuilder</span>[<span class="hljs-type">FileBasedConfiguration</span>](classOf[<span class="hljs-type">PropertiesConfiguration</span>])    .configure(params.properties().setFileName(<span class="hljs-string">"commerce.properties"</span>))  <span class="hljs-comment">// 通过getConfiguration获取配置对</span>  <span class="hljs-keyword">val</span> config: <span class="hljs-type">FileBasedConfiguration</span> = builder.getConfiguration&#125;</code></pre><h3 id="方法二：使用Properties"><a href="#方法二：使用Properties" class="headerlink" title="方法二：使用Properties"></a>方法二：使用Properties</h3><pre><code class="hljs scala"><span class="hljs-keyword">package</span> conf<span class="hljs-keyword">import</span> java.io.&#123;<span class="hljs-type">FileInputStream</span>, <span class="hljs-type">InputStream</span>&#125;<span class="hljs-keyword">import</span> java.util.<span class="hljs-type">Properties</span><span class="hljs-comment">/**</span><span class="hljs-comment"> * 读取配置文件</span><span class="hljs-comment"> * 使用Properties</span><span class="hljs-comment"> */</span><span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">ConfigManagerProperties</span> </span>&#123;  <span class="hljs-keyword">val</span> props = <span class="hljs-keyword">new</span> <span class="hljs-type">Properties</span><span class="hljs-comment">/*  方法一：FileInputStream方式，传入配置文件所在位置</span><span class="hljs-comment">  val path = "src\\main\\resources\\commerce.properties"</span><span class="hljs-comment">  private val inputStream = new FileInputStream(path)*/</span>  <span class="hljs-comment">//方法二：用getResourceAsStream获取输入流</span>  <span class="hljs-comment">//getResourceAsStreampath以'/'开头时,</span>  <span class="hljs-comment">//从项目的ClassPath根下获取资源，就是要写相对于classpath根下的绝对路径。</span>  <span class="hljs-keyword">private</span> <span class="hljs-keyword">val</span> stream: <span class="hljs-type">InputStream</span> = <span class="hljs-keyword">this</span>.getClass().getResourceAsStream(<span class="hljs-string">"/commerce.properties"</span>)  props.load(stream)&#125;</code></pre><h3 id="测试："><a href="#测试：" class="headerlink" title="测试："></a>测试：</h3><pre><code class="hljs scala"><span class="hljs-keyword">package</span> conf<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">TestConfiguration</span> </span>&#123;  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span></span>(args: <span class="hljs-type">Array</span>[<span class="hljs-type">String</span>]): <span class="hljs-type">Unit</span> = &#123;    <span class="hljs-keyword">val</span> user = <span class="hljs-type">ConfigManagerFileBased</span>.config.getString(<span class="hljs-string">"jdbc.user"</span>)    println(user) <span class="hljs-comment">//root</span>    <span class="hljs-keyword">val</span> password = <span class="hljs-type">ConfigManagerProperties</span>.props.getProperty(<span class="hljs-string">"jdbc.password"</span>)    println(password) <span class="hljs-comment">//123456</span>  &#125;&#125;</code></pre><blockquote><h4 id="扩展："><a href="#扩展：" class="headerlink" title="扩展："></a><strong>扩展：</strong></h4><p><a href="https://www.cnblogs.com/starwater/p/6703702.html" target="_blank" rel="noopener">scala读取jar包外配置文件的方式</a></p></blockquote>]]></content>
+    
+    
+    <categories>
+      
+      <category>Spark</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Spark</tag>
+      
+      <tag>工具类</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Spark实现WordCount的4种方式</title>
     <link href="/2020/07/23/Spark%E5%AE%9E%E7%8E%B0WordCount%E7%9A%844%E7%A7%8D%E6%96%B9%E5%BC%8F/"/>
     <url>/2020/07/23/Spark%E5%AE%9E%E7%8E%B0WordCount%E7%9A%844%E7%A7%8D%E6%96%B9%E5%BC%8F/</url>
