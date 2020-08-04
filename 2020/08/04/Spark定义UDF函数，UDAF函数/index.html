@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <title>Spark定义UDF函数，UDAF函数 - ruixinyue</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>ruixinyue</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+                Spark定义UDF函数，UDAF函数
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-08-04 16:19">
+      August 4, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.1k 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      17
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="1-自定义UDF函数"><a href="#1-自定义UDF函数" class="headerlink" title="1. 自定义UDF函数"></a>1. 自定义UDF函数</h2><p>​    使用<code>sparkSession.udf.register()</code>定义UDF函数</p>
+<p>示例：</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> net.sf.json.<span class="hljs-type">JSONObject</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">SparkSession</span>
+<span class="hljs-keyword">import</span> org.apache.spark.&#123;<span class="hljs-type">SparkConf</span>, <span class="hljs-type">SparkContext</span>&#125;
+
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">UDF</span> </span>&#123;
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span></span>(args: <span class="hljs-type">Array</span>[<span class="hljs-type">String</span>]): <span class="hljs-type">Unit</span> = &#123;
+      
+    <span class="hljs-keyword">val</span> sparkConf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setAppName(<span class="hljs-string">"udf"</span>).setMaster(<span class="hljs-string">"local"</span>)
+    <span class="hljs-keyword">val</span> sparkContext = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkContext</span>(sparkConf)
+    <span class="hljs-keyword">val</span> sparkSession = <span class="hljs-type">SparkSession</span>.builder().config(sparkConf).getOrCreate()
+    <span class="hljs-keyword">import</span> sparkSession.implicits._
+      
+    <span class="hljs-comment">//student.txt</span>
+    <span class="hljs-comment">//张三_2班_&#123;"math":90,"english":100&#125;</span>
+    <span class="hljs-comment">//李四_3班_&#123;"math":80,"english":50&#125;</span>
+    <span class="hljs-comment">//王五_2班_&#123;"math":60,"english":70&#125;</span>
+    <span class="hljs-keyword">val</span> stuDF = sparkContext.textFile(<span class="hljs-string">"src\\main\\resources\\student.txt"</span>)
+      .map(_.split(<span class="hljs-string">"_"</span>))
+      .map(array =&gt; (array(<span class="hljs-number">0</span>),array(<span class="hljs-number">1</span>),array(<span class="hljs-number">2</span>)))
+      .toDF(<span class="hljs-string">"name"</span>, <span class="hljs-string">"class"</span>, <span class="hljs-string">"gradeJson"</span>)
+      .createOrReplaceTempView(<span class="hljs-string">"stu"</span>)
+
+
+    <span class="hljs-comment">//自定义udf拼接两个列</span>
+    sparkSession.udf.register(<span class="hljs-string">"concat"</span>,(v1:<span class="hljs-type">String</span>,v2:<span class="hljs-type">String</span>,split:<span class="hljs-type">String</span>) =&gt;&#123;
+      v1 + split + v2
+    &#125;)
+
+    <span class="hljs-keyword">val</span> sql = <span class="hljs-string">"select concat(name,class,',') from stu"</span>
+    sparkSession.sql(sql).show()
+<span class="hljs-comment">//    +--------------------------+</span>
+<span class="hljs-comment">//    |UDF:concat(name, class, ,)|</span>
+<span class="hljs-comment">//    +--------------------------+</span>
+<span class="hljs-comment">//    |                     张三,2班|</span>
+<span class="hljs-comment">//    |                     李四,3班|</span>
+<span class="hljs-comment">//    |                     王五,2班|</span>
+<span class="hljs-comment">//    +--------------------------+</span>
+
+
+    <span class="hljs-comment">//自定义udf：解析Json</span>
+    sparkSession.udf.register(<span class="hljs-string">"get_json_field"</span>, (json: <span class="hljs-type">String</span>, field: <span class="hljs-type">String</span>) =&gt; &#123;
+      <span class="hljs-keyword">val</span> jSONObject = <span class="hljs-type">JSONObject</span>.fromObject(json)
+      jSONObject.getString(field)
+    &#125;)
+      
+    <span class="hljs-keyword">val</span> sql1 = <span class="hljs-string">"select get_json_field(gradeJson,'math') from stu"</span>
+    sparkSession.sql(sql1).show()
+    <span class="hljs-comment">//+-----------------------------------+</span>
+    <span class="hljs-comment">//|UDF:get_json_field(gradeJson, math)|</span>
+    <span class="hljs-comment">//+-----------------------------------+</span>
+    <span class="hljs-comment">//|                                 90|</span>
+    <span class="hljs-comment">//|                                 70|</span>
+    <span class="hljs-comment">//|                                 50|</span>
+    <span class="hljs-comment">//+-----------------------------------+</span>
+  &#125;
+&#125;</code></pre>
+
+
+
+<h2 id="2-自定义UDAF函数"><a href="#2-自定义UDAF函数" class="headerlink" title="2. 自定义UDAF函数"></a>2. 自定义UDAF函数</h2><p>​    强类型的Dataset和弱类型的DataFrame都提供了相关的聚合函数， 如 count()，countDistinct()，avg()，max()，min()。除此之外，用户可以设定自己的自定义聚合函数。</p>
+<p>​    注意：自定义的UDAF函数需要先注册后再使用</p>
+<h3 id="2-1-弱类型用户自定义聚合函数"><a href="#2-1-弱类型用户自定义聚合函数" class="headerlink" title="2.1 弱类型用户自定义聚合函数"></a>2.1 弱类型用户自定义聚合函数</h3><p>通过继承UserDefinedAggregateFunction来实现用户自定义聚合函数。</p>
+<p>示例：现类似Hive中的collect_set函数</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">Row</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.expressions.&#123;<span class="hljs-type">MutableAggregationBuffer</span>, <span class="hljs-type">UserDefinedAggregateFunction</span>&#125;
+<span class="hljs-keyword">import</span> org.apache.spark.sql.types.&#123;<span class="hljs-type">DataType</span>, <span class="hljs-type">StructField</span>, <span class="hljs-type">StructType</span>,<span class="hljs-type">StringType</span>&#125;
+
+<span class="hljs-comment">/**</span>
+<span class="hljs-comment"> * 实现类似Hive中的collect_set</span>
+<span class="hljs-comment"> * 列转行</span>
+<span class="hljs-comment"> * 它们都是将分组中的某列转为一个数组返回，</span>
+<span class="hljs-comment"> * 不同的是collect_list不去重而collect_set去重。</span>
+<span class="hljs-comment"> */</span>
+<span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Collect_set</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">UserDefinedAggregateFunction</span></span>&#123;
+
+  <span class="hljs-comment">// UDAF:输入数据类型为String</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">inputSchema</span></span>: <span class="hljs-type">StructType</span> = <span class="hljs-type">StructType</span>(<span class="hljs-type">StructField</span>(<span class="hljs-string">"col"</span>, <span class="hljs-type">StringType</span>)::<span class="hljs-type">Nil</span>)
+
+  <span class="hljs-comment">// 缓冲区类型</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">bufferSchema</span></span>: <span class="hljs-type">StructType</span> = <span class="hljs-type">StructType</span>(<span class="hljs-type">StructField</span>(<span class="hljs-string">"bufferCol"</span>, <span class="hljs-type">StringType</span>)::<span class="hljs-type">Nil</span>)
+
+  <span class="hljs-comment">// 输出数据类型</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">dataType</span></span>: <span class="hljs-type">DataType</span> = <span class="hljs-type">StringType</span>
+
+  <span class="hljs-comment">// 对于相同的输入是否一直返回相同的输出</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">deterministic</span></span>: <span class="hljs-type">Boolean</span> = <span class="hljs-literal">true</span>
+
+  <span class="hljs-comment">//初始化buffer</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">initialize</span></span>(buffer: <span class="hljs-type">MutableAggregationBuffer</span>): <span class="hljs-type">Unit</span> = &#123;
+    buffer(<span class="hljs-number">0</span>) = <span class="hljs-string">""</span>
+  &#125;
+
+  <span class="hljs-comment">// 相同Execute间的数据合并</span>
+  <span class="hljs-comment">// input更新进buffer(0)</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">update</span></span>(buffer: <span class="hljs-type">MutableAggregationBuffer</span>, input: <span class="hljs-type">Row</span>): <span class="hljs-type">Unit</span> = &#123;
+    <span class="hljs-keyword">var</span> bufferInfo = buffer.getString(<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">val</span> col = input.getString(<span class="hljs-number">0</span>)
+
+    <span class="hljs-comment">//collect_set需要去重，如果col已经在buffer中，就不拼接</span>
+    <span class="hljs-keyword">if</span>(!bufferInfo.contains(col))&#123;
+      <span class="hljs-keyword">if</span>(<span class="hljs-string">""</span>.equals(bufferInfo))&#123;
+        bufferInfo += col
+      &#125;<span class="hljs-keyword">else</span>&#123;
+        bufferInfo += <span class="hljs-string">","</span> + col
+      &#125;
+      buffer.update(<span class="hljs-number">0</span>,bufferInfo)
+    &#125;
+  &#125;
+  <span class="hljs-comment">// 不同Execute间的数据合并</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">merge</span></span>(buffer1: <span class="hljs-type">MutableAggregationBuffer</span>, buffer2: <span class="hljs-type">Row</span>): <span class="hljs-type">Unit</span> = &#123;
+    <span class="hljs-keyword">var</span> bufferInfo1 = buffer1.getString(<span class="hljs-number">0</span>)
+    <span class="hljs-keyword">val</span> bufferInfo2 = buffer2.getString(<span class="hljs-number">0</span>)
+
+    <span class="hljs-keyword">for</span> (col &lt;- bufferInfo2.split(<span class="hljs-string">","</span>)) &#123;
+      <span class="hljs-keyword">if</span> (!bufferInfo1.contains(col)) &#123;
+        <span class="hljs-keyword">if</span> (<span class="hljs-string">""</span>.equals(bufferInfo1)) &#123;
+          bufferInfo1 += col
+        &#125; <span class="hljs-keyword">else</span> &#123;
+          bufferInfo1 += <span class="hljs-string">","</span> + col
+        &#125;
+        buffer1.update(<span class="hljs-number">0</span>, bufferInfo1)
+      &#125;
+
+    &#125;
+  &#125;
+
+  <span class="hljs-comment">// 计算最终结果</span>
+  <span class="hljs-keyword">override</span> <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">evaluate</span></span>(buffer: <span class="hljs-type">Row</span>): <span class="hljs-type">Any</span> = &#123;
+    buffer.getString(<span class="hljs-number">0</span>)
+  &#125;
+
+&#125;</code></pre>
+
+<p>测试：</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.<span class="hljs-type">SparkConf</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">SparkSession</span>
+
+<span class="hljs-class"><span class="hljs-keyword">object</span> <span class="hljs-title">TestUDAF</span> </span>&#123;
+  <span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">main</span></span>(args: <span class="hljs-type">Array</span>[<span class="hljs-type">String</span>]): <span class="hljs-type">Unit</span> = &#123;
+    <span class="hljs-keyword">val</span> sparkConf = <span class="hljs-keyword">new</span> <span class="hljs-type">SparkConf</span>().setAppName(<span class="hljs-string">"udf"</span>).setMaster(<span class="hljs-string">"local"</span>)
+    <span class="hljs-keyword">val</span> sparkSession = <span class="hljs-type">SparkSession</span>.builder().config(sparkConf).getOrCreate()
+    sparkSession.udf.register(<span class="hljs-string">"collect_set"</span>,<span class="hljs-keyword">new</span> <span class="hljs-type">Collect_set</span>)
+        <span class="hljs-keyword">val</span> dataArray = <span class="hljs-type">Array</span>((<span class="hljs-string">"张三"</span>,<span class="hljs-string">"red"</span>),
+          (<span class="hljs-string">"李四"</span>,<span class="hljs-string">"yellow"</span>),(<span class="hljs-string">"张三"</span>,<span class="hljs-string">"green"</span>),(<span class="hljs-string">"张三"</span>,<span class="hljs-string">"green"</span>))
+    <span class="hljs-keyword">import</span> sparkSession.implicits._
+    <span class="hljs-keyword">val</span> dataFrame = sparkSession.sparkContext.makeRDD(dataArray)
+      .toDF(<span class="hljs-string">"name"</span>, <span class="hljs-string">"color"</span>).createOrReplaceTempView(<span class="hljs-string">"stu"</span>)
+    <span class="hljs-keyword">val</span> sql = <span class="hljs-string">"select name,collect_set(color) from stu group by name"</span>
+    sparkSession.sql(sql).show()
+    <span class="hljs-comment">//+----+------------------+</span>
+    <span class="hljs-comment">//|name|collect_set(color)|</span>
+    <span class="hljs-comment">//+----+------------------+</span>
+    <span class="hljs-comment">//|  李四|            yellow|</span>
+    <span class="hljs-comment">//|  张三|         red,green|</span>
+    <span class="hljs-comment">//+----+------------------+</span>
+
+  &#125;
+&#125;</code></pre>
+
+<h3 id="2-2-强类型用户自定义聚合函数"><a href="#2-2-强类型用户自定义聚合函数" class="headerlink" title="2.2 强类型用户自定义聚合函数"></a>2.2 强类型用户自定义聚合函数</h3><p>通过继承Aggregator来实现强类型自定义聚合函数，求平均工资</p>
+<pre><code class="hljs scala"><span class="hljs-keyword">import</span> org.apache.spark.sql.expressions.<span class="hljs-type">Aggregator</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">Encoder</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">Encoders</span>
+<span class="hljs-keyword">import</span> org.apache.spark.sql.<span class="hljs-type">SparkSession</span>
+<span class="hljs-comment">// 既然是强类型，可能有case类</span>
+<span class="hljs-keyword">case</span> <span class="hljs-class"><span class="hljs-keyword">class</span> <span class="hljs-title">Employee</span>(<span class="hljs-params">name: <span class="hljs-type">String</span>, salary: <span class="hljs-type">Long</span></span>)</span>
+<span class="hljs-class"><span class="hljs-title">case</span> <span class="hljs-title">class</span> <span class="hljs-title">Average</span>(<span class="hljs-params">var sum: <span class="hljs-type">Long</span>, var count: <span class="hljs-type">Long</span></span>)</span>
+<span class="hljs-class"></span>
+<span class="hljs-class"><span class="hljs-title">object</span> <span class="hljs-title">MyAverage</span> <span class="hljs-keyword">extends</span> <span class="hljs-title">Aggregator</span>[<span class="hljs-type">Employee</span>, <span class="hljs-type">Average</span>, <span class="hljs-type">Double</span>] </span>&#123;
+<span class="hljs-comment">// 定义一个数据结构，保存工资总数和工资总个数，初始都为0</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">zero</span></span>: <span class="hljs-type">Average</span> = <span class="hljs-type">Average</span>(<span class="hljs-number">0</span>L, <span class="hljs-number">0</span>L)
+<span class="hljs-comment">// Combine two values to produce a new value. For performance, the function may modify `buffer`</span>
+<span class="hljs-comment">// and return it instead of constructing a new object</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">reduce</span></span>(buffer: <span class="hljs-type">Average</span>, employee: <span class="hljs-type">Employee</span>): <span class="hljs-type">Average</span> = &#123;
+	buffer.sum += employee.salary
+	buffer.count += <span class="hljs-number">1</span>
+	buffer
+&#125;
+<span class="hljs-comment">// 聚合不同execute的结果</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">merge</span></span>(b1: <span class="hljs-type">Average</span>, b2: <span class="hljs-type">Average</span>): <span class="hljs-type">Average</span> = &#123;
+	b1.sum += b2.sum
+	b1.count += b2.count
+	b1
+&#125;
+<span class="hljs-comment">// 计算输出</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">finish</span></span>(reduction: <span class="hljs-type">Average</span>): <span class="hljs-type">Double</span> = reduction.sum.toDouble / reduction.count
+<span class="hljs-comment">// 设定之间值类型的编码器，要转换成case类</span>
+<span class="hljs-comment">// Encoders.product是进行scala元组和case类转换的编码器 </span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">bufferEncoder</span></span>: <span class="hljs-type">Encoder</span>[<span class="hljs-type">Average</span>] = <span class="hljs-type">Encoders</span>.product
+<span class="hljs-comment">// 设定最终输出值的编码器</span>
+<span class="hljs-function"><span class="hljs-keyword">def</span> <span class="hljs-title">outputEncoder</span></span>: <span class="hljs-type">Encoder</span>[<span class="hljs-type">Double</span>] = <span class="hljs-type">Encoders</span>.scalaDouble
+&#125;
+
+<span class="hljs-keyword">import</span> spark.implicits._
+
+<span class="hljs-keyword">val</span> ds = spark.read.json(<span class="hljs-string">"examples/src/main/resources/employees.json"</span>).as[<span class="hljs-type">Employee</span>]
+ds.show()
+<span class="hljs-comment">// +-------+------+</span>
+<span class="hljs-comment">// |   name|salary|</span>
+<span class="hljs-comment">// +-------+------+</span>
+<span class="hljs-comment">// |Michael|  3000|</span>
+<span class="hljs-comment">// |   Andy|  4500|</span>
+<span class="hljs-comment">// | Justin|  3500|</span>
+<span class="hljs-comment">// |  Berta|  4000|</span>
+<span class="hljs-comment">// +-------+------+</span>
+
+<span class="hljs-comment">// Convert the function to a `TypedColumn` and give it a name</span>
+<span class="hljs-keyword">val</span> averageSalary = <span class="hljs-type">MyAverage</span>.toColumn.name(<span class="hljs-string">"average_salary"</span>)
+<span class="hljs-keyword">val</span> result = ds.select(averageSalary)
+result.show()
+<span class="hljs-comment">// +--------------+</span>
+<span class="hljs-comment">// |average_salary|</span>
+<span class="hljs-comment">// +--------------+</span>
+<span class="hljs-comment">// |        3750.0|</span>
+<span class="hljs-comment">// +--------------+</span></code></pre>
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Spark/">Spark</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Spark/">Spark</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/27/scala%E8%AF%BB%E5%8F%96%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6/">
+                        <span class="hidden-mobile">scala读取配置文件</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
