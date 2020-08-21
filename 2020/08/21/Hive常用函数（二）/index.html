@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <title>Hive常用函数（二） - ruixinyue</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>ruixinyue</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+                Hive常用函数（二）
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2020-08-21 17:30">
+      August 21, 2020 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      973 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      14
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h2 id="case-when-窗口函数-时间函数-列转行"><a href="#case-when-窗口函数-时间函数-列转行" class="headerlink" title="case when/ 窗口函数/时间函数/列转行"></a>case when/ 窗口函数/时间函数/列转行</h2><h3 id="1-case-when"><a href="#1-case-when" class="headerlink" title="1. case when"></a>1. case when</h3><p><strong>CASE WHEN a THEN b [WHEN c THEN d]* [ELSE e] END</strong></p>
+<ul>
+<li>When a = true, returns b; when c = true, returns d; else returns e.</li>
+<li>类似java中的switch case语句和scala中的模式匹配</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> age &lt; <span class="hljs-number">18</span> <span class="hljs-keyword">then</span> <span class="hljs-string">"少年"</span> <span class="hljs-keyword">when</span> age &lt; <span class="hljs-number">60</span> <span class="hljs-keyword">then</span> <span class="hljs-string">"成年人"</span>  <span class="hljs-keyword">else</span> <span class="hljs-string">"老年人"</span> <span class="hljs-keyword">end</span> <span class="hljs-keyword">from</span> student;</code></pre>
+
+
+
+<h3 id="2-row-number"><a href="#2-row-number" class="headerlink" title="2. row_number"></a>2. row_number</h3><p><strong>排序窗口函数：</strong></p>
+<ul>
+<li>根据具体的分组和排序，为每行数据生成一个起始值等于1的唯一序列数。</li>
+<li>常用于分组取TopN需求</li>
+</ul>
+<h3 id="3-rank"><a href="#3-rank" class="headerlink" title="3. rank"></a>3. rank</h3><p><strong>排序窗口函数：</strong></p>
+<ul>
+<li>对组中的数据进行排名，如果名次相同，则排名也相同，但是下一个名次的排名序号会出现不连续，序号总数不会变。</li>
+</ul>
+<h3 id="4-dense-rank"><a href="#4-dense-rank" class="headerlink" title="4. dense_rank"></a>4. dense_rank</h3><p><strong>排序窗口函数：</strong></p>
+<ul>
+<li>dense_rank与rank类似，dense_rank在生成序号时是连续的，而rank生成的序号有可能不连续。当出现名次相同时，则排名序号也相同。下一个排名的序号与上一个排名序号是连续的，所以序号总数可能会减少。</li>
+</ul>
+<p><strong>排序窗口函数示例：</strong></p>
+<p><strong>建表：</strong></p>
+<pre><code class="hljs sql"><span class="hljs-keyword">create</span> <span class="hljs-keyword">table</span> score(
+<span class="hljs-keyword">name</span> <span class="hljs-keyword">string</span>,
+score <span class="hljs-built_in">int</span>) 
+<span class="hljs-keyword">row</span> <span class="hljs-keyword">format</span> <span class="hljs-keyword">delimited</span> <span class="hljs-keyword">fields</span> <span class="hljs-keyword">terminated</span> <span class="hljs-keyword">by</span> <span class="hljs-string">"\t"</span>;</code></pre>
+
+<p><strong>插入数据：</strong></p>
+<pre><code class="hljs crystal">insert into scoreselect <span class="hljs-string">"Michael"</span>,<span class="hljs-string">"87"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Will</span>","95"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Wendy</span>","64"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Steven</span>","94"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Lucy</span>","56"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Lily</span>","84"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Jess</span>","64"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Mike</span>","87"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Wei</span>","84"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Yun</span>","60"</span>
+<span class="hljs-class"><span class="hljs-keyword">union</span> <span class="hljs-title">all</span> <span class="hljs-title">select</span> "<span class="hljs-title">Richard</span>","87";</span></code></pre>
+
+<p><strong>按照成绩排名：</strong></p>
+<pre><code class="hljs pgsql"><span class="hljs-keyword">select</span> <span class="hljs-type">name</span>,score,
+rank() <span class="hljs-keyword">over</span>(<span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> score <span class="hljs-keyword">desc</span>) rp,
+dense_rank() <span class="hljs-keyword">over</span>(<span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> score <span class="hljs-keyword">desc</span>) drp,
+row_number() <span class="hljs-keyword">over</span>(<span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> score <span class="hljs-keyword">desc</span>) rmp 
+<span class="hljs-keyword">from</span> score;</code></pre>
+
+<p><strong>查询结果：</strong></p>
+<pre><code class="hljs angelscript">name   	 score  	 rp  	 drp  	 rmp  	
+Will     	 <span class="hljs-number">95</span>     	 <span class="hljs-number">1</span>   	 <span class="hljs-number">1</span>    	 <span class="hljs-number">1</span>    	
+Steven   	 <span class="hljs-number">94</span>     	 <span class="hljs-number">2</span>   	 <span class="hljs-number">2</span>    	 <span class="hljs-number">2</span>    	
+Richard  	 <span class="hljs-number">87</span>     	 <span class="hljs-number">3</span>   	 <span class="hljs-number">3</span>    	 <span class="hljs-number">3</span>    	
+Mike     	 <span class="hljs-number">87</span>     	 <span class="hljs-number">3</span>   	 <span class="hljs-number">3</span>    	 <span class="hljs-number">4</span>    	
+Michael  	 <span class="hljs-number">87</span>     	 <span class="hljs-number">3</span>   	 <span class="hljs-number">3</span>    	 <span class="hljs-number">5</span>    	
+Wei      	 <span class="hljs-number">84</span>     	 <span class="hljs-number">6</span>   	 <span class="hljs-number">4</span>    	 <span class="hljs-number">6</span>    	
+Lily     	 <span class="hljs-number">84</span>     	 <span class="hljs-number">6</span>   	 <span class="hljs-number">4</span>    	 <span class="hljs-number">7</span>    	
+Jess     	 <span class="hljs-number">64</span>     	 <span class="hljs-number">8</span>   	 <span class="hljs-number">5</span>    	 <span class="hljs-number">8</span>    	
+Wendy    	 <span class="hljs-number">64</span>     	 <span class="hljs-number">8</span>   	 <span class="hljs-number">5</span>    	 <span class="hljs-number">9</span>    	
+Yun      	 <span class="hljs-number">60</span>     	 <span class="hljs-number">10</span>  	 <span class="hljs-number">6</span>    	 <span class="hljs-number">10</span>   	
+Lucy     	 <span class="hljs-number">56</span>     	 <span class="hljs-number">11</span>  	 <span class="hljs-number">7</span>    	 <span class="hljs-number">11</span></code></pre>
+
+
+
+
+
+<h3 id="6-date-format"><a href="#6-date-format" class="headerlink" title="6.date_format"></a>6.date_format</h3><p><strong>date_format(date/timestamp/string ts, string fmt)</strong></p>
+<ul>
+<li>将日期/时间戳/字符串转换为fmt指定格式的字符串值，第二个参数fmt应该是常量。</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">date_format</span>(<span class="hljs-string">'2020-08-21'</span>,<span class="hljs-string">'yyyy-MM'</span>);<span class="hljs-comment">--2020-08</span>
+<span class="hljs-keyword">select</span> <span class="hljs-keyword">date_format</span>(<span class="hljs-string">'2020-08-21'</span>,<span class="hljs-string">'MM'</span>);<span class="hljs-comment">--08</span>
+<span class="hljs-keyword">select</span> <span class="hljs-keyword">date_format</span>(<span class="hljs-string">'2020-08-21'</span>,<span class="hljs-string">'M'</span>);<span class="hljs-comment">--8</span>
+<span class="hljs-keyword">select</span> <span class="hljs-keyword">date_format</span>(<span class="hljs-string">'2020-11-21'</span>,<span class="hljs-string">'M'</span>);<span class="hljs-comment">--11</span>
+<span class="hljs-keyword">select</span> <span class="hljs-keyword">date_format</span>(<span class="hljs-string">'2020-08-21'</span>,<span class="hljs-string">'y'</span>);<span class="hljs-comment">--2020</span></code></pre>
+
+
+
+<h3 id="7-current-date"><a href="#7-current-date" class="headerlink" title="7.current_date"></a>7.current_date</h3><ul>
+<li>返回当前日期，格式yyyy-MM-dd, 使用时候带不带括号都可以。</li>
+<li>同一查询中对current_date的所有调用均返回相同的值。</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">current_date</span>();  <span class="hljs-comment">-- 2020-08-21</span>
+<span class="hljs-keyword">select</span> <span class="hljs-keyword">current_date</span>;<span class="hljs-comment">-- 2020-08-21</span></code></pre>
+
+
+
+<h3 id="8-current-timestamp"><a href="#8-current-timestamp" class="headerlink" title="8.current_timestamp"></a>8.current_timestamp</h3><ul>
+<li>返回当前时刻，格式yyyy-MM-dd HH:mm:ss,使用时候带不带括号都可以。</li>
+<li>同一查询中对current_timestamp的所有调用均返回相同的值。</li>
+</ul>
+<pre><code class="hljs angelscript">select current_timestamp(); -<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span> <span class="hljs-number">14</span>:<span class="hljs-number">31</span>:<span class="hljs-number">29.438</span>
+select current_timestamp;-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span> <span class="hljs-number">14</span>:<span class="hljs-number">31</span>:<span class="hljs-number">34.354</span></code></pre>
+
+
+
+<h3 id="9-date-add"><a href="#9-date-add" class="headerlink" title="9.date_add"></a>9.date_add</h3><p><strong>date_add(date/timestamp/string startdate, tinyint/smallint/int days)</strong></p>
+<ul>
+<li>加减startdate的天数</li>
+</ul>
+<pre><code class="hljs lsl">select date_add('<span class="hljs-number">2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span>',<span class="hljs-number">1</span>);-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-22</span>
+select date_add('<span class="hljs-number">2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span>',<span class="hljs-number">-1</span>);-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-20</span>
+select date_add(current_date,<span class="hljs-number">1</span>);-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-22</span>
+select date_add(current_date,<span class="hljs-number">-1</span>);-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-20</span></code></pre>
+
+
+
+<h3 id="10-next-day"><a href="#10-next-day" class="headerlink" title="10.next_day"></a>10.next_day</h3><p><strong>next_day(string start_date, string day_of_week)</strong></p>
+<ul>
+<li>返回start_date下周日期中的day_of_week代表的当天日期。</li>
+<li>start_date是字符串/日期/时间戳。day_of_week是2个字母，3个字母或一周中某天的全名。</li>
+</ul>
+<pre><code class="hljs lsl">select next_day('<span class="hljs-number">2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span>','mo');-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-24</span>
+select next_day('<span class="hljs-number">2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span>','Tuesday');-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-25</span></code></pre>
+
+
+
+<h3 id="11-last-day"><a href="#11-last-day" class="headerlink" title="11. last_day"></a>11. last_day</h3><p><strong>last_day(string date)</strong></p>
+<ul>
+<li>返回date所属月份的最后一天。</li>
+<li>date格式为“ yyyy-MM-dd HH：mm：ss”或“ yyyy-MM-dd”的字符串。</li>
+</ul>
+<pre><code class="hljs lsl">select last_day('<span class="hljs-number">2020</span><span class="hljs-number">-08</span><span class="hljs-number">-21</span>');-<span class="hljs-number">-2020</span><span class="hljs-number">-08</span><span class="hljs-number">-31</span>
+select last_day('<span class="hljs-number">2020</span><span class="hljs-number">-09</span><span class="hljs-number">-21</span>');-<span class="hljs-number">-2020</span><span class="hljs-number">-09</span><span class="hljs-number">-30</span></code></pre>
+
+
+
+<h3 id="12-year"><a href="#12-year" class="headerlink" title="12. year"></a>12. year</h3><p><strong>year(string date)</strong></p>
+<ul>
+<li>返回日期或时间戳的年份部分</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">year</span>(<span class="hljs-string">'2020-08-21'</span>);<span class="hljs-comment">--2020</span></code></pre>
+
+
+
+<h3 id="13-month"><a href="#13-month" class="headerlink" title="13. month"></a>13. month</h3><p><strong>month(string date)</strong></p>
+<ul>
+<li>返回日期或时间戳的月份部分。</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">month</span>(<span class="hljs-string">'2020-08-21'</span>);<span class="hljs-comment">--8</span></code></pre>
+
+
+
+<h3 id="14-day"><a href="#14-day" class="headerlink" title="14. day"></a>14. day</h3><p><strong>day(string date)</strong></p>
+<ul>
+<li>返回日期或时间戳的日部分。</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> <span class="hljs-keyword">day</span>(<span class="hljs-string">'2020-08-21'</span>);<span class="hljs-comment">--21</span></code></pre>
+
+
+
+<h3 id="15-列转行"><a href="#15-列转行" class="headerlink" title="15. 列转行"></a>15. 列转行</h3><p><strong>EXPLODE(col)</strong></p>
+<ul>
+<li>将hive一列中复杂的array或者map结构拆分成多行。</li>
+</ul>
+<p><strong>LATERAL VIEW</strong></p>
+<ul>
+<li>LATERAL VIEW udtf(expression) tableAlias AS columnAlias</li>
+<li>用于和split, explode等UDTF一起使用，它能够将一列数据拆成多行数据，在此基础上可以对拆分后的数据进行聚合。</li>
+</ul>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> tf.*  <span class="hljs-keyword">from</span> ( <span class="hljs-keyword">select</span> <span class="hljs-number">0</span>) t <span class="hljs-keyword">lateral</span> <span class="hljs-keyword">view</span> <span class="hljs-keyword">explode</span>(<span class="hljs-built_in">array</span>( <span class="hljs-string">'A'</span> , <span class="hljs-string">'B'</span> , <span class="hljs-string">'C'</span> )) tf  <span class="hljs-keyword">as</span>   <span class="hljs-keyword">col</span>;
+<span class="hljs-comment">--查询结果：</span>
+<span class="hljs-comment">--col</span>
+<span class="hljs-comment">--A    </span>
+<span class="hljs-comment">--B    </span>
+<span class="hljs-comment">--C</span></code></pre>
+
+
+
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Hive/">Hive</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Hive/">Hive</a>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%87%BD%E6%95%B0/">函数</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/08/20/Hive-SQL%E7%BB%83%E4%B9%A0/">
+                        <span class="hidden-mobile">Hive SQL练习</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
