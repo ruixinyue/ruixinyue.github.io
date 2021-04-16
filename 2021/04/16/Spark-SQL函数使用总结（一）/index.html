@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+
+
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/favicon.png">
+  <link rel="icon" type="image/png" href="/img/favicon.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <title>Spark SQL函数使用总结（一） - ruixinyue</title>
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/github-markdown-css/4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    <link  rel="stylesheet" href="https://cdn.staticfile.org/highlight.js/10.0.0/styles/github-gist.min.css" />
+  
+
+  
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_yg9cfy8wd6.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_pjno9b9zyxs.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script  src="/js/utils.js" ></script>
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>ruixinyue</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                Home
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                Archives
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                Categories
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                Tags
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                About
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" data-toggle="modal" data-target="#modalSearch">&nbsp;&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="view intro-2" id="background" parallax=true
+         style="background: url('/img/default.png') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="container text-center white-text fadeInUp">
+            <span class="h2" id="subtitle">
+              
+                Spark SQL函数使用总结（一）
+              
+            </span>
+
+            
+              
+  <div class="mt-3 post-meta">
+    <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+    <time datetime="2021-04-16 17:22">
+      April 16, 2021 pm
+    </time>
+  </div>
+
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      872 字
+    </span>
+  
+
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-clock-fill"></i>
+      
+      
+      12
+       分钟
+    </span>
+  
+
+  
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-md">
+      <div class="container nopadding-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <div class="post-content mx-auto" id="post">
+            
+            <article class="markdown-body">
+              <h3 id="1-least"><a href="#1-least" class="headerlink" title="1.least"></a>1.least</h3><p>取到最小值，有空或者null时候，需要提前处理</p>
+<p>按照字符大小排序，取最小值</p>
+<p><a href="https://imgtu.com/i/cf83ad" target="_blank" rel="noopener"><img src="https://z3.ax1x.com/2021/04/16/cf83ad.png" srcset="/img/loading.gif" alt="cf83ad.png"></a></p>
+<h3 id="2-多个字段从小到大排，取第三个字段"><a href="#2-多个字段从小到大排，取第三个字段" class="headerlink" title="2.多个字段从小到大排，取第三个字段"></a>2.多个字段从小到大排，取第三个字段</h3><p>index(sort_array(array(a,b,c)),2)</p>
+<ul>
+<li>array() : 将多个字段转为数据</li>
+<li>sort_array() : 将数组从小到大排序</li>
+<li>index(array,index) : 根据索引值取到数组的对应元素</li>
+<li>空值和null都会参与排序，需要对空和null进行预处理</li>
+</ul>
+<p><a href="https://imgtu.com/i/cf88IA" target="_blank" rel="noopener"><img src="https://z3.ax1x.com/2021/04/16/cf88IA.png" srcset="/img/loading.gif" alt="cf88IA.png"></a></p>
+<p><a href="https://imgtu.com/i/cf81VH" target="_blank" rel="noopener"><img src="https://z3.ax1x.com/2021/04/16/cf81VH.png" srcset="/img/loading.gif" alt="cf81VH.png"></a></p>
+<h3 id="3-lag-value-expr-offset-default"><a href="#3-lag-value-expr-offset-default" class="headerlink" title="3.lag(value_expr[,offset[,default]])"></a>3.lag(value_expr[,offset[,default]])</h3><p>用于统计窗口内往上第n行值。第一个参数为列名，第二个参数为往上第n行（可选，默认为1），第三个参数为默认值（当往上第n行为NULL时候，取默认值，如不指定，则为NULL.</p>
+<p><strong>lead(value_expr[,offset[,default]])</strong></p>
+<p>用于统计窗口内往下第n行值。第一个参数为列名，第二个参数为往下第n行（可选，默认为1），第三个参数为默认值（当往下第n行为NULL时候，取默认值，如不指定，则为NULL.</p>
+<p><strong>情景：根据业务员每个月的年累计金额，计算业务员每个月的金额</strong></p>
+<table>
+<thead>
+<tr>
+<th>业务员工号</th>
+<th>月</th>
+<th>年累计金额</th>
+<th>月金额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>empno</td>
+<td>month(yyyy-MM)</td>
+<td>year_amount</td>
+<td>month_amount</td>
+</tr>
+</tbody></table>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span> 
+empno,
+<span class="hljs-keyword">month</span>
+year_amount,
+nvl(lag(year_amount) <span class="hljs-keyword">over</span>(<span class="hljs-keyword">partition</span> <span class="hljs-keyword">by</span> empno, <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>) <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> <span class="hljs-keyword">month</span>),<span class="hljs-number">0</span>) <span class="hljs-keyword">as</span> <span class="hljs-keyword">last</span>,
+(year_amount - nvl(lag(year_amount) <span class="hljs-keyword">over</span>(<span class="hljs-keyword">partition</span> <span class="hljs-keyword">by</span> empno, <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>) <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> <span class="hljs-keyword">month</span>),<span class="hljs-number">0</span>)) <span class="hljs-keyword">as</span> month_amount
+<span class="hljs-keyword">from</span> empno_detail;</code></pre>
+
+<ul>
+<li>sql中进行加减法时候，要进行nvl转null处理，select （1 - null);  – null</li>
+<li>月份不能有中断</li>
+</ul>
+<h3 id="4-sum-over-partition-by-order-by-rows-between-unbounded-preceding-and-current-row-动态累加求和"><a href="#4-sum-over-partition-by-order-by-rows-between-unbounded-preceding-and-current-row-动态累加求和" class="headerlink" title="4.sum() over(partition by [] order by [] rows between unbounded preceding and current row)    动态累加求和"></a>4.sum() over(partition by [] order by [] rows between unbounded preceding and current row)    <strong>动态累加求和</strong></h3><p><strong>情景：累计业务员在一年内到每个月的总销售额</strong></p>
+<table>
+<thead>
+<tr>
+<th>业务员工号</th>
+<th>月</th>
+<th>金额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>empno</td>
+<td>month(yyyy-MM)</td>
+<td>amount</td>
+</tr>
+</tbody></table>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span>
+empno,
+<span class="hljs-keyword">month</span>,
+<span class="hljs-keyword">sum</span>(amount) <span class="hljs-keyword">over</span>(<span class="hljs-keyword">partition</span> <span class="hljs-keyword">by</span> empno,<span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>) <span class="hljs-keyword">order</span> <span class="hljs-keyword">by</span> <span class="hljs-keyword">month</span> <span class="hljs-keyword">rows</span> <span class="hljs-keyword">between</span> <span class="hljs-keyword">unbounded</span> <span class="hljs-keyword">preceding</span> <span class="hljs-keyword">and</span> <span class="hljs-keyword">current</span> <span class="hljs-keyword">row</span>) <span class="hljs-keyword">as</span> cumulative_amount
+<span class="hljs-keyword">from</span> empno_detail;</code></pre>
+
+<h3 id="5-sum-case-when-then-else-end-列转行"><a href="#5-sum-case-when-then-else-end-列转行" class="headerlink" title="5.sum(case when then else end)  列转行"></a>5.sum(case when then else end)  列转行</h3><p>情景：表一转成表二形式</p>
+<p>表一：</p>
+<table>
+<thead>
+<tr>
+<th>业务员工号</th>
+<th>月</th>
+<th>金额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>empno</td>
+<td>month(yyyy-MM)</td>
+<td>amount</td>
+</tr>
+</tbody></table>
+<p>表二：</p>
+<table>
+<thead>
+<tr>
+<th>业务员工号</th>
+<th>年度</th>
+<th>一月金额</th>
+<th>二月金额</th>
+<th>三月金额</th>
+<th>四月金额</th>
+<th>五月金额</th>
+<th>六月金额</th>
+<th>七月金额</th>
+<th>八月金额</th>
+<th>九月金额</th>
+<th>十月金额</th>
+<th>十一月金额</th>
+<th>十二月金额</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>empno</td>
+<td>year</td>
+<td>jan_amount</td>
+<td>feb_amount</td>
+<td>mar_amount</td>
+<td>apr_amount</td>
+<td>may_amount</td>
+<td>jun_amount</td>
+<td>jul_amount</td>
+<td>aug_amount</td>
+<td>sep_amount</td>
+<td>oct_amount</td>
+<td>nov_amount</td>
+<td>dec_amount</td>
+</tr>
+</tbody></table>
+<pre><code class="hljs sql"><span class="hljs-keyword">select</span>
+empno,
+<span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>) <span class="hljs-keyword">as</span> <span class="hljs-keyword">year</span>,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'01'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> jan_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'02'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> feb_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'03'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> mar_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'04'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> apr_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'05'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> may_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'06'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> jun_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'07'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> jul_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'08'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> aug_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'09'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> sep_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'10'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> oct_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'11'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> nov_amount,
+<span class="hljs-keyword">sum</span>(<span class="hljs-keyword">case</span> <span class="hljs-keyword">when</span> <span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">6</span>,<span class="hljs-number">2</span>) = <span class="hljs-string">'12'</span> <span class="hljs-keyword">then</span> nvl(amount,<span class="hljs-number">0</span>) <span class="hljs-keyword">else</span> <span class="hljs-number">0</span> <span class="hljs-keyword">end</span>) <span class="hljs-keyword">as</span> dec_amount
+<span class="hljs-keyword">from</span> empno_detail
+<span class="hljs-keyword">group</span> <span class="hljs-keyword">by</span> empno,<span class="hljs-keyword">substring</span>(<span class="hljs-keyword">month</span>,<span class="hljs-number">1</span>,<span class="hljs-number">4</span>)</code></pre>
+
+<h3 id="6-保留两位小数"><a href="#6-保留两位小数" class="headerlink" title="6.保留两位小数"></a>6.保留两位小数</h3><ul>
+<li>rountd():  四舍五入<ul>
+<li>round(3.333, 2);   3.33</li>
+<li>可能出现有些浮点数不生效</li>
+</ul>
+</li>
+<li>强转成decimal类型，四舍五入<ul>
+<li>cast(3.333 as decimal(20,2));</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-bug记录"><a href="#7-bug记录" class="headerlink" title="7.bug记录"></a>7.bug记录</h3><ol>
+<li><strong>限制数据范围时，注意左右区间是否都要限制</strong></li>
+</ol>
+<h3 id="8-去重"><a href="#8-去重" class="headerlink" title="8.去重"></a>8.去重</h3><p>数据量很大的表，用row_number()取最新去重，效率比较好</p>
+
+            </article>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                  <div class="post-meta mr-3">
+                    <i class="iconfont icon-category"></i>
+                    
+                      <a class="hover-with-bg" href="/categories/Spark/">Spark</a>
+                    
+                  </div>
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E5%87%BD%E6%95%B0/">函数</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Spark/">Spark</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Spark-SQL/">Spark SQL</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" target="_blank" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！</p>
+              
+              
+                <div class="post-prevnext row">
+                  <div class="post-prev col-6">
+                    
+                    
+                  </div>
+                  <div class="post-next col-6">
+                    
+                    
+                      <a href="/2020/08/21/Hive%E5%B8%B8%E7%94%A8%E5%87%BD%E6%95%B0%EF%BC%88%E4%BA%8C%EF%BC%89/">
+                        <span class="hidden-mobile">Hive常用函数（二）</span>
+                        <span class="visible-mobile">Next</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </div>
+                </div>
+              
+            </div>
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;TOC</p>
+  <div id="tocbot"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+  </main>
+
+  
+    <a id="scroll-top-button" href="#" role="button">
+      <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+    </a>
+  
+
+  
+    <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Search</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">keyword</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  
+
+  
+
+  
+
+  <footer class="mt-5">
+  <div class="text-center py-3">
+    <div>
+      <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a>
+      <i class="iconfont icon-love"></i>
+      <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener">
+        <span>Fluid</span></a>
+    </div>
+    
+
+    
+
+    
+  </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script  src="https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js" ></script>
+<script  src="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/js/bootstrap.min.js" ></script>
+<script  src="/js/debouncer.js" ></script>
+<script  src="/js/main.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/lazyload.js" ></script>
+  
+
+
+
+  <script defer src="https://cdn.staticfile.org/clipboard.js/2.0.6/clipboard.min.js" ></script>
+  <script  src="/js/clipboard-use.js" ></script>
+
+
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/tocbot/4.11.1/tocbot.min.js" ></script>
+  <script>
+    $(document).ready(function () {
+      var boardCtn = $('#board-ctn');
+      var boardTop = boardCtn.offset().top;
+
+      tocbot.init({
+        tocSelector: '#tocbot',
+        contentSelector: 'article.markdown-body',
+        headingSelector: 'h1,h2,h3,h4,h5,h6',
+        linkClass: 'tocbot-link',
+        activeLinkClass: 'tocbot-active-link',
+        listClass: 'tocbot-list',
+        isCollapsedClass: 'tocbot-is-collapsed',
+        collapsibleClass: 'tocbot-is-collapsible',
+        collapseDepth: 0,
+        scrollSmooth: true,
+        headingsOffset: -boardTop
+      });
+      if ($('.toc-list-item').length > 0) {
+        $('#toc').css('visibility', 'visible');
+      }
+    });
+  </script>
+
+
+
+
+
+  <script  src="https://cdn.staticfile.org/anchor-js/4.2.2/anchor.min.js" ></script>
+  <script>
+    anchors.options = {
+      placement: "right",
+      visible: "hover",
+      
+    };
+    var el = "h1,h2,h3,h4,h5,h6".split(",");
+    var res = [];
+    for (item of el) {
+      res.push(".markdown-body > " + item)
+    }
+    anchors.add(res.join(", "))
+  </script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+  <script>
+    var path = "/local-search.xml";
+    var inputArea = document.querySelector("#local-search-input");
+    inputArea.onclick = function () {
+      searchFunc(path, 'local-search-input', 'local-search-result');
+      this.onclick = null
+    }
+  </script>
+
+
+
+  <script  src="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.staticfile.org/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+  <script>
+    $('#post img:not(.no-zoom img, img[no-zoom]), img[zoom]').each(
+      function () {
+        var element = document.createElement('a');
+        $(element).attr('data-fancybox', 'images');
+        $(element).attr('href', $(this).attr('src'));
+        $(this).wrap(element);
+      }
+    );
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
