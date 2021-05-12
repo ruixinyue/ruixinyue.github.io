@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>如何查看parquet文件内容</title>
+    <link href="/2021/05/05/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8Bparquet%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9/"/>
+    <url>/2021/05/05/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8Bparquet%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9/</url>
+    
+    <content type="html"><![CDATA[<p>可以用spark对parquet文件进行操作，大体步骤是将parquet转成DateFrame后，变成对DateFrame的操作，步骤如下（使用spark1.5版本）：</p><h4 id="1-开一个spark-shell窗口"><a href="#1-开一个spark-shell窗口" class="headerlink" title="1. 开一个spark-shell窗口"></a>1. 开一个spark-shell窗口</h4><pre><code class="hljs shell">spark-shell</code></pre><h4 id="2-读取parquet文件"><a href="#2-读取parquet文件" class="headerlink" title="2. 读取parquet文件"></a>2. 读取parquet文件</h4><pre><code class="hljs java">val df = sqlContext.read.parquet(<span class="hljs-string">"/data/app/testdate/"</span>)</code></pre><p>路径是HDFS的路径，该路径下都是parquet文件，且源数据信息一致</p><h4 id="3-查看内容"><a href="#3-查看内容" class="headerlink" title="3. 查看内容"></a>3. 查看内容</h4><pre><code class="hljs shell">df.show</code></pre><ol><li>默认展示前20条</li><li>show()可以跟参数，show(100)展示100条</li><li>默认只显示20个字符，字段内容过长希望展示完整show(100,false)</li></ol><h4 id="4-进行简单的查询"><a href="#4-进行简单的查询" class="headerlink" title="4. 进行简单的查询"></a>4. 进行简单的查询</h4><p>查询年龄=30的人的姓名和性别</p><pre><code class="hljs java">df.select(<span class="hljs-string">"name"</span>,<span class="hljs-string">"sex"</span>).where(<span class="hljs-string">"age='30'"</span>).show</code></pre><ol><li>上面是对DF的简单操作</li><li>select后面指定要显示的列名</li><li>where后面跟查询条件，注意条件用双引号引用，里面的值用单引号引用</li></ol><h4 id="5-注册临时表进行复杂的查询"><a href="#5-注册临时表进行复杂的查询" class="headerlink" title="5.注册临时表进行复杂的查询"></a>5.注册临时表进行复杂的查询</h4><pre><code class="hljs java">df.registerTempTable(<span class="hljs-string">"people"</span>)val teenagers = sqlContext.sql(<span class="hljs-string">"SELECT name, age FROM people WHERE age &gt;= 13 AND age &lt;= 19"</span>)teenagers.show</code></pre><ol><li>用registerTempTable注册临时表</li><li>sqlContext.sql()进行SQL操作</li><li>跟一个行动算子执行结果</li></ol>]]></content>
+    
+    
+    <categories>
+      
+      <category>Spark</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>Spark</tag>
+      
+      <tag>parquet</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>数据源探查反思</title>
     <link href="/2021/04/28/%E6%95%B0%E6%8D%AE%E6%BA%90%E6%8E%A2%E6%9F%A5%E5%8F%8D%E6%80%9D/"/>
     <url>/2021/04/28/%E6%95%B0%E6%8D%AE%E6%BA%90%E6%8E%A2%E6%9F%A5%E5%8F%8D%E6%80%9D/</url>

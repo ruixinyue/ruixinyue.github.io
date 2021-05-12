@@ -17,7 +17,7 @@
   <meta name="description" content="">
   <meta name="author" content="John Doe">
   <meta name="keywords" content="">
-  <title>数据源探查反思 - ruixinyue</title>
+  <title>如何查看parquet文件内容 - ruixinyue</title>
 
   <link  rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/4.4.1/css/bootstrap.min.css" />
 
@@ -146,7 +146,7 @@
           <div class="container text-center white-text fadeInUp">
             <span class="h2" id="subtitle">
               
-                数据源探查反思
+                如何查看parquet文件内容
               
             </span>
 
@@ -154,8 +154,8 @@
               
   <div class="mt-3 post-meta">
     <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-    <time datetime="2021-04-28 17:44">
-      April 28, 2021 pm
+    <time datetime="2021-05-05 21:01">
+      May 5, 2021 pm
     </time>
   </div>
 
@@ -165,7 +165,7 @@
     
     <span class="post-meta mr-2">
       <i class="iconfont icon-chart"></i>
-      1.1k 字
+      272 字
     </span>
   
 
@@ -175,7 +175,7 @@
       <i class="iconfont icon-clock-fill"></i>
       
       
-      11
+      3
        分钟
     </span>
   
@@ -206,15 +206,36 @@
           <div class="post-content mx-auto" id="post">
             
             <article class="markdown-body">
-              <p>数据开发过程中对数据源的探查能避免很多后续可能出现的问题，开发中，因为数据源探查不到位，踩了很多坑，下面是探查数据源的几个方向，后续再踩坑再补充。</p>
-<h3 id="1-数据源重复"><a href="#1-数据源重复" class="headerlink" title="1. 数据源重复"></a>1. 数据源重复</h3><p>数据重复是最好排查的问题，也最基本的一个数据质量问题，数据重复分为两种，一种是普通意义上的数据重复，比如两条数据一模一样；另一种是业务主键重复，比如学生表中，班级和学号作为业务主键，一个班级中一个学号出现两次，这种现象不是两条一模一样的数据，但是用学生表时候，如果用班级和学号关联其他表时候，就可能会出现数据重复的现象，这种情况在数据探查阶段就可以发现，后续要进行去重，数据量大的时候，用<code>row_number()</code> 排序取<code>rank=1</code>的效率比<code>group by</code> 或者 <code>distinct</code>效率高，不过这张表需要有业务主键和某一个时间字段，比如学生表可以用班级和学号进行分组，更新时间倒序排，取<code>rank=1</code>的数据，就可以拿到每个学号最新的一条数据。</p>
-<p>判断数据源是否重复，还可以用<code>row_number()</code> ，取<code>rank=2</code>的数据，这部分数据最少重复了两次。拿到具体的例子，可以去定位到确切的问题。</p>
-<h3 id="2-关键字段数据质量状况"><a href="#2-关键字段数据质量状况" class="headerlink" title="2.关键字段数据质量状况"></a>2.关键字段数据质量状况</h3><p>关键字段大致上分为两类，一类是业务上的有重要意义的字段，这类字段一般是要参与计算的，可以探查这类字段的空值率，如果空值率过高可以提前反馈，是否所用的源数据有问题，避免需求做完后到线上发现这类问题。查看空值率可以用，<code>sum(case when nvl(field_name,&#39;&#39;) = &#39;&#39; then 1 else 0 end)/count(*)</code>统计。</p>
-<p>另一类是关联字段，一般是用户id，业务员工号，商品id，订单号，机构代码，时间等等，对于关联字段需要看一下数据格式，两张表的关联字段，业务含义一般都一致，存的具体内容可能不一样，特别注意时间字段作为关联字段的时候，一定要做数据探查，时间的格式大致上有<code>（yyyyMMdd,yyyy-MM-dd hh:mm:ss,yyyy-MM-dd)</code>，做报表时候，对于结算月精确到天时候，注意查看数据里面存的是月初还是月末。</p>
-<p>此外，还有一种情况，对于存的是码值的字段，先看一下源表中该字段有哪些码值，是不是每个码值都有对应的枚举，以免发布之后发现前台有转不出来的码值，产生一些不优雅的页面展示。</p>
-<h3 id="3-数据总量分布"><a href="#3-数据总量分布" class="headerlink" title="3.数据总量分布"></a>3.数据总量分布</h3><p>大部分表都可以根据实际的业务场景预估大致的数据量，一些事实表，比如客户表，营销员表，会有一个大致的数据量，如果偏差过大，源数据肯定会有问题。还可以根据一些场景进行细分，比如每个月营销员的数量应该在某个范围内波动，某个月过多过少需要引起注意。这块跟具体的业务联系比较紧，目的是想从现实的角度去验证一下，使用的源数据有没有一些比较离谱的偏差，早发现这类问题，可以考虑去换源数据，或者补数等等方式解决，避免发布之后，计算出来的结果和预期差别很大。</p>
-<h3 id="4-生产环境上表结构"><a href="#4-生产环境上表结构" class="headerlink" title="4.生产环境上表结构"></a>4.生产环境上表结构</h3><p>这类问题的可能出现的一个场景是，关系型数据库通过dsg到大数据平台，后面关系型数据库中添了新的字段，并没有同步到大数据平台，需求中却要使用到这个新添的字段，开发中用到的表数据来自关系型数据时候，可以去看一下大数据平台的表结构，对比一下要用到的字段是否存在，避免发布的时候线上因表缺字段而报错。</p>
-<p>以上是目前对数据源探查的方向的总结，后续开发中再补充。</p>
+              <p>可以用spark对parquet文件进行操作，大体步骤是将parquet转成DateFrame后，变成对DateFrame的操作，步骤如下（使用spark1.5版本）：</p>
+<h4 id="1-开一个spark-shell窗口"><a href="#1-开一个spark-shell窗口" class="headerlink" title="1. 开一个spark-shell窗口"></a>1. 开一个spark-shell窗口</h4><pre><code class="hljs shell">spark-shell</code></pre>
+
+<h4 id="2-读取parquet文件"><a href="#2-读取parquet文件" class="headerlink" title="2. 读取parquet文件"></a>2. 读取parquet文件</h4><pre><code class="hljs java">val df = sqlContext.read.parquet(<span class="hljs-string">"/data/app/testdate/"</span>)</code></pre>
+
+<p>路径是HDFS的路径，该路径下都是parquet文件，且源数据信息一致</p>
+<h4 id="3-查看内容"><a href="#3-查看内容" class="headerlink" title="3. 查看内容"></a>3. 查看内容</h4><pre><code class="hljs shell">df.show</code></pre>
+
+<ol>
+<li>默认展示前20条</li>
+<li>show()可以跟参数，show(100)展示100条</li>
+<li>默认只显示20个字符，字段内容过长希望展示完整show(100,false)</li>
+</ol>
+<h4 id="4-进行简单的查询"><a href="#4-进行简单的查询" class="headerlink" title="4. 进行简单的查询"></a>4. 进行简单的查询</h4><p>查询年龄=30的人的姓名和性别</p>
+<pre><code class="hljs java">df.select(<span class="hljs-string">"name"</span>,<span class="hljs-string">"sex"</span>).where(<span class="hljs-string">"age='30'"</span>).show</code></pre>
+
+<ol>
+<li>上面是对DF的简单操作</li>
+<li>select后面指定要显示的列名</li>
+<li>where后面跟查询条件，注意条件用双引号引用，里面的值用单引号引用</li>
+</ol>
+<h4 id="5-注册临时表进行复杂的查询"><a href="#5-注册临时表进行复杂的查询" class="headerlink" title="5.注册临时表进行复杂的查询"></a>5.注册临时表进行复杂的查询</h4><pre><code class="hljs java">df.registerTempTable(<span class="hljs-string">"people"</span>)
+val teenagers = sqlContext.sql(<span class="hljs-string">"SELECT name, age FROM people WHERE age &gt;= 13 AND age &lt;= 19"</span>)
+teenagers.show</code></pre>
+
+<ol>
+<li>用registerTempTable注册临时表</li>
+<li>sqlContext.sql()进行SQL操作</li>
+<li>跟一个行动算子执行结果</li>
+</ol>
 
             </article>
             <hr>
@@ -224,7 +245,7 @@
                   <div class="post-meta mr-3">
                     <i class="iconfont icon-category"></i>
                     
-                      <a class="hover-with-bg" href="/categories/%E6%95%B0%E6%8D%AE%E5%BC%80%E5%8F%91/">数据开发</a>
+                      <a class="hover-with-bg" href="/categories/Spark/">Spark</a>
                     
                   </div>
                 
@@ -232,9 +253,9 @@
                   <div class="post-meta">
                     <i class="iconfont icon-tags"></i>
                     
-                      <a class="hover-with-bg" href="/tags/%E6%95%B0%E6%8D%AE%E5%BC%80%E5%8F%91/">数据开发</a>
+                      <a class="hover-with-bg" href="/tags/Spark/">Spark</a>
                     
-                      <a class="hover-with-bg" href="/tags/%E5%8F%8D%E6%80%9D/">反思</a>
+                      <a class="hover-with-bg" href="/tags/parquet/">parquet</a>
                     
                   </div>
                 
@@ -247,18 +268,12 @@
                   <div class="post-prev col-6">
                     
                     
-                      <a href="/2021/05/05/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8Bparquet%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9/">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">如何查看parquet文件内容</span>
-                        <span class="visible-mobile">Previous</span>
-                      </a>
-                    
                   </div>
                   <div class="post-next col-6">
                     
                     
-                      <a href="/2021/04/23/%E7%A6%BB%E7%BA%BF%E6%95%B0%E6%8D%AE%E5%BC%80%E5%8F%91%E6%B5%81%E7%A8%8B%E5%8F%8D%E6%80%9D/">
-                        <span class="hidden-mobile">离线数据开发流程反思</span>
+                      <a href="/2021/04/28/%E6%95%B0%E6%8D%AE%E6%BA%90%E6%8E%A2%E6%9F%A5%E5%8F%8D%E6%80%9D/">
+                        <span class="hidden-mobile">数据源探查反思</span>
                         <span class="visible-mobile">Next</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
