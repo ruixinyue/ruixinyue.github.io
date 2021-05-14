@@ -4,11 +4,36 @@
   
   
   <entry>
+    <title>应用评价体系常用指标</title>
+    <link href="/2021/05/14/%E5%BA%94%E7%94%A8%E8%AF%84%E4%BB%B7%E4%BD%93%E7%B3%BB%E5%B8%B8%E7%94%A8%E6%8C%87%E6%A0%87/"/>
+    <url>/2021/05/14/%E5%BA%94%E7%94%A8%E8%AF%84%E4%BB%B7%E4%BD%93%E7%B3%BB%E5%B8%B8%E7%94%A8%E6%8C%87%E6%A0%87/</url>
+    
+    <content type="html"><![CDATA[<h3 id="1-日活"><a href="#1-日活" class="headerlink" title="1. 日活"></a>1. 日活</h3><p><strong>定义：</strong>日活跃用户数量</p><p>对用户按天进行去重，用户一天登录多次，只算作一次</p><p><strong>举例：</strong>登录app日活，使用某个模块的日活</p><h3 id="2-月活"><a href="#2-月活" class="headerlink" title="2. 月活"></a>2. 月活</h3><p><strong>定义：</strong>月活跃用户数，对用户按天进行去重</p><p><strong>日活 / 月活</strong>：能反馈用户的忠诚度</p><h3 id="3-月均日活"><a href="#3-月均日活" class="headerlink" title="3. 月均日活"></a>3. 月均日活</h3><p><strong>定义：</strong>“操作人数/月初总人力”的月均值</p><p><strong>计算口径：</strong>操作天数求和/(月初总人力*截止更新日期的统计月的天数)</p><p><strong>举例：</strong>app月均日活：”登录app的人数/当月月初总人力”的月均值</p><p>在计算的时候可以转换成：所有客户登录app天数求和/（月初总人力*截止更新日期的统计月的天数）</p><h3 id="4-活跃度"><a href="#4-活跃度" class="headerlink" title="4. 活跃度"></a>4. 活跃度</h3><p><strong>定义：</strong>使用次数/总人数</p><p><strong>举例：</strong>模块活跃度：用户使用某模块次数/总人数</p><h3 id="5-使用率"><a href="#5-使用率" class="headerlink" title="5. 使用率"></a>5. 使用率</h3><p><strong>定义：</strong>使用人数/总人数</p><p><strong>举例：</strong>模块使用率：使用某模块人数/总人数</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>数据开发</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>应用评价体系</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>如何查看parquet文件内容</title>
     <link href="/2021/05/05/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8Bparquet%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9/"/>
     <url>/2021/05/05/%E5%A6%82%E4%BD%95%E6%9F%A5%E7%9C%8Bparquet%E6%96%87%E4%BB%B6%E5%86%85%E5%AE%B9/</url>
     
-    <content type="html"><![CDATA[<p>可以用spark对parquet文件进行操作，大体步骤是将parquet转成DateFrame后，变成对DateFrame的操作，步骤如下（使用spark1.5版本）：</p><h4 id="1-开一个spark-shell窗口"><a href="#1-开一个spark-shell窗口" class="headerlink" title="1. 开一个spark-shell窗口"></a>1. 开一个spark-shell窗口</h4><pre><code class="hljs shell">spark-shell</code></pre><h4 id="2-读取parquet文件"><a href="#2-读取parquet文件" class="headerlink" title="2. 读取parquet文件"></a>2. 读取parquet文件</h4><pre><code class="hljs java">val df = sqlContext.read.parquet(<span class="hljs-string">"/data/app/testdate/"</span>)</code></pre><p>路径是HDFS的路径，该路径下都是parquet文件，且源数据信息一致</p><h4 id="3-查看内容"><a href="#3-查看内容" class="headerlink" title="3. 查看内容"></a>3. 查看内容</h4><pre><code class="hljs shell">df.show</code></pre><ol><li>默认展示前20条</li><li>show()可以跟参数，show(100)展示100条</li><li>默认只显示20个字符，字段内容过长希望展示完整show(100,false)</li></ol><h4 id="4-进行简单的查询"><a href="#4-进行简单的查询" class="headerlink" title="4. 进行简单的查询"></a>4. 进行简单的查询</h4><p>查询年龄=30的人的姓名和性别</p><pre><code class="hljs java">df.select(<span class="hljs-string">"name"</span>,<span class="hljs-string">"sex"</span>).where(<span class="hljs-string">"age='30'"</span>).show</code></pre><ol><li>上面是对DF的简单操作</li><li>select后面指定要显示的列名</li><li>where后面跟查询条件，注意条件用双引号引用，里面的值用单引号引用</li></ol><h4 id="5-注册临时表进行复杂的查询"><a href="#5-注册临时表进行复杂的查询" class="headerlink" title="5.注册临时表进行复杂的查询"></a>5.注册临时表进行复杂的查询</h4><pre><code class="hljs java">df.registerTempTable(<span class="hljs-string">"people"</span>)val teenagers = sqlContext.sql(<span class="hljs-string">"SELECT name, age FROM people WHERE age &gt;= 13 AND age &lt;= 19"</span>)teenagers.show</code></pre><ol><li>用registerTempTable注册临时表</li><li>sqlContext.sql()进行SQL操作</li><li>跟一个行动算子执行结果</li></ol>]]></content>
+    <content type="html"><![CDATA[<p>可以用spark对parquet文件进行操作，大体步骤是将parquet转成DateFrame后，变成对DateFrame的操作，步骤如下（使用spark1.5版本）：</p><h4 id="1-开一个spark-shell窗口"><a href="#1-开一个spark-shell窗口" class="headerlink" title="1. 开一个spark-shell窗口"></a>1. 开一个spark-shell窗口</h4><pre><code class="hljs shell">spark-shell</code></pre><h4 id="2-读取parquet文件"><a href="#2-读取parquet文件" class="headerlink" title="2. 读取parquet文件"></a>2. 读取parquet文件</h4><pre><code class="hljs java">val df = sqlContext.read.parquet(<span class="hljs-string">"/data/app/"</span>)</code></pre><p>路径是HDFS的路径，该路径下都是parquet文件，且源数据信息一致</p><h4 id="3-查看内容"><a href="#3-查看内容" class="headerlink" title="3. 查看内容"></a>3. 查看内容</h4><pre><code class="hljs shell">df.show</code></pre><ol><li>默认展示前20条</li><li>show()可以跟参数，show(100)展示100条</li><li>默认只显示20个字符，字段内容过长希望展示完整show(100,false)</li></ol><h4 id="4-进行简单的查询"><a href="#4-进行简单的查询" class="headerlink" title="4. 进行简单的查询"></a>4. 进行简单的查询</h4><p>查询年龄=30的人的姓名和性别</p><pre><code class="hljs java">df.select(<span class="hljs-string">"name"</span>,<span class="hljs-string">"sex"</span>).where(<span class="hljs-string">"age='30'"</span>).show</code></pre><ol><li>上面是对DF的简单操作</li><li>select后面指定要显示的列名</li><li>where后面跟查询条件，注意条件用双引号引用，里面的值用单引号引用</li></ol><h4 id="5-注册临时表进行复杂的查询"><a href="#5-注册临时表进行复杂的查询" class="headerlink" title="5.注册临时表进行复杂的查询"></a>5.注册临时表进行复杂的查询</h4><pre><code class="hljs java">df.registerTempTable(<span class="hljs-string">"people"</span>)val teenagers = sqlContext.sql(<span class="hljs-string">"SELECT name, age FROM people WHERE age &gt;= 13 AND age &lt;= 19"</span>)teenagers.show</code></pre><ol><li>用registerTempTable注册临时表</li><li>sqlContext.sql()进行SQL操作</li><li>跟一个行动算子执行结果</li></ol>]]></content>
     
     
     <categories>
